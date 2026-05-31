@@ -1,8 +1,9 @@
 # Business Decision Simulator API
 
-FastAPI backend that exposes REST endpoints and a WebSocket for real-time simulation results.
+FastAPI backend que expoe endpoints REST e WebSocket para simulacao financeira em tempo real.
 
 ## Quick start
+
 ```bash
 cd backend
 python -m venv .venv
@@ -11,12 +12,20 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Notable endpoints
-- `GET /api/health/health` – liveness check
-- `POST /api/auth/login` – demo JWT token (no persistence yet)
-- `GET /api/scenarios/` – demo scenarios
-- `POST /api/scenarios/run` – run a one-off simulation
-- `WS /ws/simulate` – send simulation variables, receive computed KPIs and series
+## Endpoints principais
 
-## Environment
-Copy `.env.example` to `.env` and adjust credentials. For a local Postgres instance you can change `DATABASE_URL` accordingly; routes are currently in-memory but the SQLAlchemy engine is wired for future persistence.
+- `GET /api/health` - liveness check.
+- `POST /api/auth/login` - token JWT demonstrativo, sem persistencia.
+- `GET /api/scenarios/` - cenarios demonstrativos.
+- `POST /api/scenarios/run` - simulacao on-demand.
+- `WS /ws/simulate` - recebe variaveis e retorna KPIs e series calculadas.
+
+## Testes
+
+```bash
+PYTHONPATH=. pytest
+```
+
+## Ambiente
+
+Copie `.env.example` para `.env` e ajuste credenciais. As rotas atuais usam dados em memoria, mas SQLAlchemy ja esta preparado para persistencia futura.

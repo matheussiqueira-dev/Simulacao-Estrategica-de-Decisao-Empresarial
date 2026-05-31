@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Business Decision Simulator Frontend
 
-## Getting Started
+Interface Next.js para simular decisoes empresariais em tempo real usando WebSocket com fallback local.
 
-First, run the development server:
+## Execucao
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variaveis
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `NEXT_PUBLIC_WS_URL`: endpoint WebSocket do backend. Padrao: `ws://localhost:8000/ws/simulate`.
+- `NEXT_PUBLIC_SITE_URL`: URL publica usada em sitemap, robots e metadata.
 
-## Learn More
+## Validacao
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run build
+npm audit --audit-level=moderate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Screenshot da demo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Com frontend e backend rodando:
 
-## Deploy on Vercel
+```bash
+node scripts/screenshot.mjs
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+O arquivo e salvo em `docs/demo.png`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy na Vercel
+
+Configure o projeto Vercel apontando para `frontend/` como root directory ou importe este diretorio como projeto separado. O `frontend/vercel.json` define install e build commands.

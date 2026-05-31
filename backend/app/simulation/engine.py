@@ -78,7 +78,7 @@ class SimulationEngine:
             - (taxes / data.period_months)
         )
 
-        months = pd.date_range("2024-01-01", periods=data.period_months, freq="M")
+        months = pd.date_range("2024-01-01", periods=data.period_months, freq="ME")
         month_labels = months.strftime("%b").tolist()
 
         df = pd.DataFrame(

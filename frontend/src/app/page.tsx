@@ -259,6 +259,18 @@ export default function Home() {
             />
           </section>
         </div>
+
+        <footer className="mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+          <span>Desenvolvido por Matheus Siqueira</span>
+          <a
+            className="font-semibold text-green-300 transition hover:text-green-200"
+            href="https://www.matheussiqueira.dev"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            matheussiqueira.dev
+          </a>
+        </footer>
       </div>
     </div>
   );

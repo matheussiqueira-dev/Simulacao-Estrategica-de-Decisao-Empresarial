@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Business Decision Simulator">
+  <rect width="512" height="512" rx="96" fill="#0b1220"/>
+  <path d="M108 352h296" stroke="#22c55e" stroke-width="34" stroke-linecap="round"/>
+  <path d="M142 320l68-82 72 52 88-132" fill="none" stroke="#f8fafc" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="142" cy="320" r="23" fill="#38bdf8"/>
+  <circle cx="210" cy="238" r="23" fill="#f59e0b"/>
+  <circle cx="282" cy="290" r="23" fill="#22c55e"/>
+  <circle cx="370" cy="158" r="23" fill="#f8fafc"/>
+</svg>

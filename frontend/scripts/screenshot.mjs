@@ -1,20 +1,14 @@
-const path = require("path");
-const { chromium } = require("playwright");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { chromium } from "playwright";
 
-const execPath = path.join(
-  process.env.USERPROFILE,
-  "AppData",
-  "Local",
-  "ms-playwright",
-  "chromium-1208",
-  "chrome-win64",
-  "chrome.exe"
-);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const bundledExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 
 async function run() {
   const browser = await chromium.launch({
     headless: true,
-    executablePath: execPath,
+    executablePath: bundledExecutable || undefined,
   });
 
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

@@ -1,40 +1,46 @@
 # Business Decision Simulator
 
-Plataforma web interativa para testar decisões estratégicas (preço, custos, marketing, equipe, juros, impostos) e visualizar instantaneamente impacto em lucro, caixa, crescimento e risco.
+Plataforma web interativa para testar decisoes estrategicas de negocio e visualizar impacto em lucro, caixa, crescimento e risco.
 
-![Demonstração](docs/demo.gif)
-
----
+![Demonstracao](docs/demo.gif)
 
 ## Destaques
-- Atualização em tempo real: sliders e inputs disparam cálculos via WebSocket; se o socket cair, há fallback local para manter a responsividade.
-- KPIs e gráficos dinâmicos: lucro, fluxo de caixa, margem de segurança, risco e projeção de receita/lucro nos próximos meses.
-- UX inspirada em cockpit financeiro (glassmorphism + gradientes) com layout 2 colunas: controles à esquerda, KPIs/gráficos à direita.
-- Engine vetorizada (NumPy/Pandas) para simulações rápidas e fácil extensão de fórmulas.
+
+- Atualizacao em tempo real: sliders disparam calculos via WebSocket; se o socket cair, ha fallback local.
+- KPIs e graficos dinamicos: lucro, fluxo de caixa, margem de seguranca, risco e projecao de receita/lucro.
+- UX inspirada em cockpit financeiro, com controles a esquerda e indicadores a direita.
+- Engine vetorizada com NumPy/Pandas para simulacoes rapidas e extensao simples.
+- SEO, PWA, headers de seguranca e Vercel config preparados no frontend.
+- Creditos profissionais permanentes para Matheus Siqueira.
 
 ## Stack
-- **Frontend**: Next.js 16, React 19, Tailwind 3, Recharts, Playwright (screenshot demo).
-- **Backend**: FastAPI, WebSocket, Pydantic v2, SQLAlchemy (models), JWT stub.
-- **Engine**: NumPy + Pandas (cálculo de lucro, caixa, risco, crescimento).
-- **DB**: PostgreSQL (models prontos; persistência futura).
 
-## Arquitetura (visão rápida)
-- `frontend/` — UI, componentes (sliders, KPIs, chart), estado via `useSimulationState` (WebSocket + debounce).
-- `backend/app/main.py` — FastAPI + rota WS `/ws/simulate`.
-- `backend/app/simulation/engine.py` — motor de cálculo vetorizado.
-- `backend/app/api/routes/` — auth demo (JWT), cenários mock e health.
+- **Frontend**: Next.js 16.2, React 19.2, Tailwind 3, Recharts, Playwright.
+- **Backend**: FastAPI, WebSocket, Pydantic v2, SQLAlchemy, JWT demo.
+- **Engine**: NumPy + Pandas para calculo de lucro, caixa, risco e crescimento.
+- **DB**: PostgreSQL planejado; models ja estao preparados.
+
+## Arquitetura
+
+- `frontend/` - UI, componentes, metadata, PWA e estado via `useSimulationState`.
+- `backend/app/main.py` - FastAPI + rota WS `/ws/simulate`.
+- `backend/app/simulation/engine.py` - motor de calculo vetorizado.
+- `backend/app/api/routes/` - auth demo, cenarios mock e health.
 
 ## Como rodar localmente
+
 ### Backend
+
 ```bash
 cd backend
 python -m venv .venv
-. .venv/Scripts/activate   # Windows
+. .venv/Scripts/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -43,14 +49,16 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 
 O frontend espera `ws://localhost:8000/ws/simulate`. Para apontar para outro host/porta, defina `NEXT_PUBLIC_WS_URL`.
 
-## Endpoints úteis
-- `GET /api/health` — liveness.
-- `POST /api/auth/login` — emite JWT de demonstração (sem persistência).
-- `GET /api/scenarios` — cenários mock.
-- `POST /api/scenarios/run` — executa simulação on-demand (JSON de variáveis).
-- `WS /ws/simulate` — envia variáveis, recebe KPIs e séries.
+## Endpoints uteis
 
-## Variáveis simuladas (payload)
+- `GET /api/health` - liveness.
+- `POST /api/auth/login` - emite JWT de demonstracao, sem persistencia.
+- `GET /api/scenarios` - cenarios mock.
+- `POST /api/scenarios/run` - executa simulacao on-demand.
+- `WS /ws/simulate` - envia variaveis, recebe KPIs e series.
+
+## Variaveis simuladas
+
 ```json
 {
   "price": 120,
@@ -67,26 +75,40 @@ O frontend espera `ws://localhost:8000/ws/simulate`. Para apontar para outro hos
 }
 ```
 
-## Scripts úteis
-- Frontend: `npm run dev`, `npm run lint`.
-- Backend: `uvicorn app.main:app --reload`.
+## Validacao
 
-## Próximos passos sugeridos
-- Persistir usuários/cenários (PostgreSQL + Alembic) e proteger WS com JWT.
-- Rate limiting no WS + debounce configurável.
-- Testes automatizados: PyTest (engine), React Testing Library / Playwright (UI).
-- Migração para ambiente de produção (build Next + gunicorn/uvicorn workers).
+```bash
+cd frontend
+npm run lint
+npm run build
+npm audit --audit-level=moderate
+```
+
+```bash
+PYTHONPATH=backend pytest backend/tests
+python -m compileall backend/app
+```
+
+## Deploy na Vercel
+
+Configure a Vercel com `frontend/` como root directory. O arquivo `frontend/vercel.json` define `npm ci` e `npm run build`.
+
+## Proximos passos sugeridos
+
+- Persistir usuarios/cenarios com PostgreSQL + Alembic.
+- Proteger WebSocket com JWT e adicionar rate limiting.
+- Evoluir testes E2E com Playwright.
+- Adicionar pipeline CI para frontend e backend.
+
+## Creditos
+
+Desenvolvido por [Matheus Siqueira](https://www.matheussiqueira.dev).
 
 ## Sobre o GIF
+
 O arquivo `docs/demo.gif` foi gerado a partir da UI atual. Para recriar:
-1) Inicie frontend e backend (`npm run dev` + `uvicorn ...`).  
-2) Gere o PNG: `cd frontend && node scripts/screenshot.js` (usa Playwright headless).  
-3) Converta para GIF:  
-```bash
-python - <<'PY'
-from PIL import Image
-img = Image.open('docs/demo.png')
-img.save('docs/demo.gif', save_all=True, append_images=[img], duration=1200, loop=0)
-PY
-```  
-4) Faça o commit: `git add docs/demo.gif`.
+
+1. Inicie frontend e backend.
+2. Gere o PNG: `cd frontend && node scripts/screenshot.mjs`.
+3. Converta para GIF com Pillow, se desejar.
+4. Faca o commit de `docs/demo.png` ou `docs/demo.gif`.
