@@ -7,7 +7,8 @@ Plataforma web interativa para testar decisões estratégicas (preço, custos, m
 ---
 
 ## Destaques
-- Atualização em tempo real: sliders e inputs disparam cálculos via WebSocket; se o socket cair, há fallback local para manter a responsividade.
+- Atualização em tempo real: sliders e inputs disparam cálculos via WebSocket; se o socket cair, há fallback local para manter a responsividade e reconexão automática (backoff exponencial até 30 s), sem recarregar a página.
+- Entradas tolerantes a erro: campo vazio ou inválido mostra mensagem inline e mantém o último valor válido; valores fora da faixa são limitados aos extremos. Nada disso derruba a conexão.
 - KPIs e gráficos dinâmicos: lucro, fluxo de caixa, margem de segurança, risco e projeção de receita/lucro nos próximos meses.
 - UX inspirada em cockpit financeiro (glassmorphism + gradientes) com layout 2 colunas: controles à esquerda, KPIs/gráficos à direita.
 - Engine vetorizada (NumPy/Pandas) para simulações rápidas e fácil extensão de fórmulas.
@@ -43,12 +44,14 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 
 O frontend espera `ws://localhost:8000/ws/simulate`. Para apontar para outro host/porta, defina `NEXT_PUBLIC_WS_URL`.
 
+O WebSocket só aceita handshakes cujo header `Origin` esteja em `ALLOWED_ORIGINS` (a mesma lista do CORS; padrão: `http://localhost:3000` e `http://127.0.0.1:3000`). Ao servir o frontend em outra origem, inclua-a no backend como array JSON, por exemplo `ALLOWED_ORIGINS='["https://seu-dominio.example"]'`.
+
 ## Endpoints úteis
 - `GET /api/health` — liveness.
 - `POST /api/auth/login` — emite JWT de demonstração (sem persistência).
 - `GET /api/scenarios` — cenários mock.
 - `POST /api/scenarios/run` — executa simulação on-demand (JSON de variáveis).
-- `WS /ws/simulate` — envia variáveis, recebe KPIs e séries.
+- `WS /ws/simulate` — envia variáveis, recebe KPIs e séries. Mensagem inválida recebe um frame `{"error": {"code": "validation_error", ...}}` e a conexão continua aberta.
 
 ## Variáveis simuladas (payload)
 ```json
@@ -69,7 +72,7 @@ O frontend espera `ws://localhost:8000/ws/simulate`. Para apontar para outro hos
 
 ## Scripts úteis
 - Frontend: `npm run dev`, `npm run lint`.
-- Backend: `uvicorn app.main:app --reload`.
+- Backend: `uvicorn app.main:app --reload`; testes com `pip install -r requirements-dev.txt` e `python -m pytest`.
 
 ## Próximos passos sugeridos
 - Persistir usuários/cenários (PostgreSQL + Alembic) e proteger WS com JWT.

@@ -5,8 +5,10 @@ import { useEffect, useReducer, useRef } from "react";
 import {
   SimulationInput,
   SimulationResult,
+  clampToLimit,
   defaultSimulationInput,
   emptySimulationResult,
+  simulationInputLimits,
 } from "../types";
 
 type Status = "idle" | "connecting" | "live" | "error";
@@ -16,19 +18,25 @@ type State = {
   result: SimulationResult;
   status: Status;
   lastUpdated: number | null;
+  serverError: string | null;
 };
 
 type Action =
   | { type: "setVar"; key: keyof SimulationInput; value: number }
   | { type: "setResult"; result: SimulationResult }
   | { type: "setStatus"; status: Status }
+  | { type: "setServerError"; message: string }
   | { type: "replaceVars"; vars: SimulationInput };
+
+const RECONNECT_BASE_MS = 1_000;
+const RECONNECT_MAX_MS = 30_000;
 
 const initialState: State = {
   variables: defaultSimulationInput,
   result: emptySimulationResult,
   status: "idle",
   lastUpdated: null,
+  serverError: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -40,12 +48,43 @@ function reducer(state: State, action: Action): State {
     case "replaceVars":
       return { ...state, variables: action.vars, lastUpdated: Date.now() };
     case "setResult":
-      return { ...state, result: action.result, lastUpdated: Date.now() };
+      return { ...state, result: action.result, serverError: null, lastUpdated: Date.now() };
     case "setStatus":
       return { ...state, status: action.status };
+    case "setServerError":
+      return { ...state, serverError: action.message };
     default:
       return state;
   }
+}
+
+const resultNumberKeys = [
+  "monthly_profit",
+  "annual_profit",
+  "cash_flow",
+  "safety_margin",
+  "growth_rate",
+  "risk_index",
+] as const;
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+// Server frames are external data: error frames and malformed payloads must never
+// replace the result being rendered.
+function isSimulationResult(value: unknown): value is SimulationResult {
+  if (typeof value !== "object" || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    resultNumberKeys.every((key) => isFiniteNumber(record[key])) &&
+    Array.isArray(record.revenue_series) &&
+    record.revenue_series.every(isFiniteNumber) &&
+    Array.isArray(record.profit_series) &&
+    record.profit_series.every(isFiniteNumber) &&
+    Array.isArray(record.month_labels) &&
+    record.month_labels.every((label) => typeof label === "string")
+  );
 }
 
 function simulateLocally(input: SimulationInput): SimulationResult {
@@ -105,50 +144,82 @@ export function useSimulationState() {
 
     const wsUrl =
       process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws/simulate";
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    let socket: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+    let disposed = false;
+
+    const connect = () => {
+      const ws = new WebSocket(wsUrl);
+      socket = ws;
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        attempts = 0;
+        dispatch({ type: "setStatus", status: "live" });
+        ws.send(JSON.stringify(variablesRef.current));
+      };
+
+      ws.onmessage = (event: MessageEvent) => {
+        let payload: unknown = null;
+        try {
+          payload = JSON.parse(String(event.data));
+        } catch {
+          // Treated as an unexpected frame below.
+        }
+        if (isSimulationResult(payload)) {
+          dispatch({ type: "setResult", result: payload });
+        } else {
+          dispatch({
+            type: "setServerError",
+            message:
+              "O servidor recusou a última atualização; os resultados exibidos são os do último cálculo válido.",
+          });
+        }
+      };
+
+      ws.onerror = () => dispatch({ type: "setStatus", status: "error" });
+      ws.onclose = () => {
+        if (wsRef.current === ws) wsRef.current = null;
+        if (disposed) return;
+        dispatch({ type: "setStatus", status: "idle" });
+        // Retry with exponential backoff so a dropped socket never needs a page reload.
+        const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
+        attempts += 1;
+        reconnectTimer = setTimeout(connect, delay);
+      };
+    };
+
     dispatch({ type: "setStatus", status: "connecting" });
-
-    ws.onopen = () => {
-      dispatch({ type: "setStatus", status: "live" });
-      ws.send(JSON.stringify(variablesRef.current));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const parsed = JSON.parse(event.data) as SimulationResult;
-        dispatch({ type: "setResult", result: parsed });
-      } catch (err) {
-        console.warn("Failed to parse simulation message", err);
-      }
-    };
-
-    ws.onerror = () => dispatch({ type: "setStatus", status: "error" });
-    ws.onclose = () => dispatch({ type: "setStatus", status: "idle" });
+    connect();
 
     return () => {
-      ws.close();
+      disposed = true;
+      clearTimeout(reconnectTimer);
+      socket?.close();
     };
   }, []);
 
   const sendVariables = (vars: SimulationInput) => {
-    variablesRef.current = vars;
     const socket = wsRef.current;
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(vars));
     } else {
-      // Keep UI responsive even without the backend.
+      // Keep UI responsive while the socket is down; status follows the socket itself.
       dispatch({ type: "setResult", result: simulateLocally(vars) });
-      dispatch({ type: "setStatus", status: "error" });
     }
   };
 
   const updateVariable = (key: keyof SimulationInput, value: number) => {
-    const nextVars = { ...variablesRef.current, [key]: value };
-    dispatch({ type: "setVar", key, value });
+    // An empty or out-of-range field must never reach the server.
+    if (!Number.isFinite(value)) return;
+    const safeValue = clampToLimit(value, simulationInputLimits[key]);
+    // Updated right away so two edits inside one debounce window both survive.
+    variablesRef.current = { ...variablesRef.current, [key]: safeValue };
+    dispatch({ type: "setVar", key, value: safeValue });
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => sendVariables(nextVars), 160);
+    debounceRef.current = setTimeout(() => sendVariables(variablesRef.current), 160);
   };
 
   return {

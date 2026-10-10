@@ -4,13 +4,11 @@ import { SimulationChart } from "./components/SimulationChart";
 import { VariableSlider } from "./components/VariableSlider";
 import { KpiCard } from "./components/KpiCard";
 import { useSimulationState } from "./hooks/useSimulationState";
-import { SimulationInput } from "./types";
+import { SimulationInput, simulationInputLimits } from "./types";
 
 const sliderConfig: {
   key: keyof SimulationInput;
   label: string;
-  min: number;
-  max: number;
   step?: number;
   unit?: string;
   hint?: string;
@@ -18,8 +16,6 @@ const sliderConfig: {
   {
     key: "price",
     label: "Preço de venda",
-    min: 60,
-    max: 220,
     unit: "$",
     step: 1,
     hint: "Elasticidade afeta demanda",
@@ -27,69 +23,51 @@ const sliderConfig: {
   {
     key: "variable_cost",
     label: "Custo variável",
-    min: 10,
-    max: 120,
     unit: "$",
   },
   {
     key: "fixed_cost",
     label: "Custos fixos / mês",
-    min: 5000,
-    max: 80000,
     unit: "$",
     step: 500,
   },
   {
     key: "employees",
     label: "Equipe",
-    min: 5,
-    max: 40,
     step: 1,
     hint: "Folha estimada a 4.2k por pessoa",
   },
   {
     key: "interest_rate",
     label: "Taxa de juros (a.a.)",
-    min: 0,
-    max: 0.25,
     step: 0.005,
     hint: "Impacta despesa financeira",
   },
   {
     key: "tax_rate",
     label: "Impostos",
-    min: 0.05,
-    max: 0.35,
     step: 0.01,
   },
   {
     key: "demand",
     label: "Demanda mensal",
-    min: 200,
-    max: 4000,
     step: 50,
     hint: "Unidades projetadas",
   },
   {
     key: "marketing_spend",
     label: "Marketing / mês",
-    min: 0,
-    max: 40000,
     step: 500,
     unit: "$",
   },
   {
     key: "churn_rate",
     label: "Churn",
-    min: 0,
-    max: 0.25,
     step: 0.005,
   },
   {
     key: "price_sensitivity",
     label: "Sensibilidade a preço",
-    min: 0,
-    max: 0.5,
     step: 0.01,
   },
 ];
@@ -108,7 +86,7 @@ function formatPercent(value: number) {
 
 export default function Home() {
   const { state, updateVariable } = useSimulationState();
-  const { result, status, variables } = state;
+  const { result, status, variables, serverError } = state;
 
   const riskWidth = `${Math.min(100, Math.max(0, result.risk_index * 100))}%`;
 
@@ -134,6 +112,7 @@ export default function Home() {
               })}
             </span>
             <span
+              role="status"
               className={`rounded-full px-4 py-2 text-xs font-semibold ${
                 status === "live"
                   ? "bg-green-500/15 text-green-300 border border-green-400/40"
@@ -150,6 +129,9 @@ export default function Home() {
             </span>
           </div>
         </header>
+        <p role="status" className={`text-sm text-amber-200 ${serverError ? "mt-3" : ""}`}>
+          {serverError}
+        </p>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
           <section className="space-y-4">
@@ -172,8 +154,8 @@ export default function Home() {
                   key={slider.key}
                   label={slider.label}
                   value={Number(variables[slider.key])}
-                  min={slider.min}
-                  max={slider.max}
+                  min={simulationInputLimits[slider.key].min}
+                  max={simulationInputLimits[slider.key].max}
                   step={slider.step}
                   unit={slider.unit}
                   hint={slider.hint}
