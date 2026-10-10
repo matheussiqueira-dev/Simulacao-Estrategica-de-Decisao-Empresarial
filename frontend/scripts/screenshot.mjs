@@ -1,20 +1,14 @@
-const path = require("path");
-const { chromium } = require("playwright");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { chromium } from "playwright";
 
-const execPath = path.join(
-  process.env.USERPROFILE,
-  "AppData",
-  "Local",
-  "ms-playwright",
-  "chromium-1208",
-  "chrome-win64",
-  "chrome.exe"
-);
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 async function run() {
+  // Installed Edge by default: Windows App Control blocks the Chromium Playwright downloads.
   const browser = await chromium.launch({
     headless: true,
-    executablePath: execPath,
+    channel: process.env.PLAYWRIGHT_CHANNEL || "msedge",
   });
 
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -23,7 +17,7 @@ async function run() {
   });
   await page.waitForTimeout(1500);
 
-  const outPng = path.join(__dirname, "..", "..", "docs", "demo.png");
+  const outPng = path.join(scriptDir, "..", "..", "docs", "demo.png");
   await page.screenshot({ path: outPng, fullPage: true });
   await browser.close();
 
