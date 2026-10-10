@@ -27,3 +27,35 @@ body {
   border: 1px solid rgba(110, 243, 142, 0.35);
   box-shadow: 0 12px 50px rgba(110, 243, 142, 0.18);
 }
+
+/* Shared author footer. Interim styling from the existing Tailwind theme until ms-tokens.css lands. */
+@layer components {
+  .ms-container {
+    @apply mx-auto w-full max-w-7xl px-6;
+  }
+
+  .ms-footer {
+    @apply border-t border-white/10 py-6 text-sm text-slate-400;
+  }
+
+  .ms-footer__inner {
+    @apply flex flex-col gap-2;
+  }
+
+  .ms-footer__signature,
+  .ms-footer__links {
+    @apply flex flex-wrap items-center gap-x-4;
+  }
+
+  .ms-footer a {
+    @apply inline-flex min-h-11 items-center rounded-sm text-slate-300 underline-offset-4 hover:text-white hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400;
+  }
+
+  .ms-footer__meta {
+    @apply text-xs;
+  }
+
+  .ms-sr-only {
+    @apply sr-only;
+  }
+}

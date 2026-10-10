@@ -4,7 +4,11 @@ import { SimulationChart } from "./components/SimulationChart";
 import { VariableSlider } from "./components/VariableSlider";
 import { KpiCard } from "./components/KpiCard";
 import { useSimulationState } from "./hooks/useSimulationState";
+import { PORTFOLIO_CASE_URL, REPO_URL } from "./site";
 import { SimulationInput, simulationInputLimits } from "./types";
+
+const projectLinkClass =
+  "rounded-full px-3 py-2 text-sm text-slate-300 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400";
 
 const sliderConfig: {
   key: keyof SimulationInput;
@@ -103,7 +107,20 @@ export default function Home() {
               <p className="text-xl font-semibold text-white">Performance Overview</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <nav aria-label="Projeto" className="flex items-center gap-1">
+              <a href={PORTFOLIO_CASE_URL} className={projectLinkClass}>
+                Portfólio
+              </a>
+              <a
+                href={REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={projectLinkClass}
+              >
+                Código<span className="ms-sr-only"> (abre em nova aba)</span>
+              </a>
+            </nav>
             <span className="rounded-full bg-slate-900/70 px-4 py-2 text-xs text-slate-300">
               {new Date().toLocaleDateString("pt-BR", {
                 day: "2-digit",
