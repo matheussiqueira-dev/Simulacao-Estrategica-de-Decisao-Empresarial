@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import packageJson from "../../package.json";
-import { PRODUCT_NAME, REPO_URL, author } from "./site";
+import { PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
 import "./globals.css";
 
 const sans = Manrope({
@@ -16,10 +16,33 @@ const display = Space_Grotesk({
   display: "swap",
 });
 
+const description =
+  "Painel interativo para testar variáveis de negócio e visualizar impacto financeiro em tempo real.";
+
 export const metadata: Metadata = {
-  title: "Business Decision Simulator",
-  description:
-    "Painel interativo para testar variáveis de negócio e visualizar impacto financeiro em tempo real.",
+  title: `${PRODUCT_NAME} | ${author.name}`,
+  description,
+  authors: [{ name: author.name, url: author.url }],
+  creator: author.name,
+  alternates: { canonical: SITE_URL },
+  openGraph: { url: SITE_URL },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: PRODUCT_NAME,
+  description,
+  url: SITE_URL,
+  applicationCategory: "BusinessApplication",
+  inLanguage: "pt-BR",
+  author: {
+    "@type": "Person",
+    name: author.name,
+    url: author.url,
+    sameAs: [author.linkedin, author.github],
+  },
+  codeRepository: REPO_URL,
 };
 
 // VERCEL_GIT_COMMIT_SHA only exists in Vercel builds; local builds omit the commit.
@@ -41,6 +64,12 @@ export default function RootLayout({
       <body
         className={`${sans.variable} ${display.variable} bg-slate-950 text-slate-100 antialiased font-sans`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
         {children}
         <footer className="ms-footer">
           <div className="ms-container ms-footer__inner">
