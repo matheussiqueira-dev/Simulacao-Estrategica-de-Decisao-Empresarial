@@ -8,21 +8,21 @@ class SimulationInput(BaseModel):
     # Bounds must never be stricter than the UI ranges in frontend/src/app/types.ts.
     model_config = ConfigDict(allow_inf_nan=False)
 
-    price: float = Field(120.0, gt=0, le=220, description="Sale price per unit")
-    variable_cost: float = Field(45.0, gt=0, le=120, description="Variable cost per unit")
-    fixed_cost: float = Field(25000.0, ge=0, le=80_000, description="Monthly fixed costs")
-    employees: int = Field(12, ge=1, le=40, description="Headcount on payroll")
+    price: float = Field(default=120.0, gt=0, le=220, description="Sale price per unit")
+    variable_cost: float = Field(default=45.0, gt=0, le=120, description="Variable cost per unit")
+    fixed_cost: float = Field(default=25000.0, ge=0, le=80_000, description="Monthly fixed costs")
+    employees: int = Field(default=12, ge=1, le=40, description="Headcount on payroll")
     interest_rate: float = Field(
-        0.08, ge=0, le=0.25, description="Annual interest rate (decimal)"
+        default=0.08, ge=0, le=0.25, description="Annual interest rate (decimal)"
     )
-    tax_rate: float = Field(0.27, ge=0, le=1, description="Effective tax rate")
-    demand: float = Field(1200.0, ge=0, le=4000, description="Expected monthly demand units")
+    tax_rate: float = Field(default=0.27, ge=0, le=1, description="Effective tax rate")
+    demand: float = Field(default=1200.0, ge=0, le=4000, description="Expected monthly demand units")
     marketing_spend: float = Field(
-        12000.0, ge=0, le=40_000, description="Monthly marketing investment"
+        default=12000.0, ge=0, le=40_000, description="Monthly marketing investment"
     )
-    churn_rate: float = Field(0.04, ge=0, le=1, description="Customer churn rate (decimal)")
-    price_sensitivity: float = Field(0.18, ge=0, le=2, description="Demand elasticity to price")
-    period_months: int = Field(12, ge=1, le=24, description="Projection horizon in months")
+    churn_rate: float = Field(default=0.04, ge=0, le=1, description="Customer churn rate (decimal)")
+    price_sensitivity: float = Field(default=0.18, ge=0, le=2, description="Demand elasticity to price")
+    period_months: int = Field(default=12, ge=1, le=24, description="Projection horizon in months")
 
 
 class SimulationResult(BaseModel):

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import {
   SimulationInput,
@@ -11,7 +11,7 @@ import {
   simulationInputLimits,
 } from "../types";
 
-type Status = "idle" | "connecting" | "live" | "error";
+type Status = "connecting" | "live" | "error";
 
 type State = {
   variables: SimulationInput;
@@ -28,13 +28,17 @@ type Action =
   | { type: "setServerError"; message: string }
   | { type: "replaceVars"; vars: SimulationInput };
 
-const RECONNECT_BASE_MS = 1_000;
-const RECONNECT_MAX_MS = 30_000;
+// Same origin by default: on Vercel the backend service owns /api. Set it to the API
+// origin (e.g. http://localhost:8000) when running the Next and FastAPI dev servers apart.
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+const RUN_ENDPOINT = `${API_BASE_URL}/api/scenarios/run`;
+const DEBOUNCE_MS = 160;
+const REQUEST_TIMEOUT_MS = 8_000;
 
 const initialState: State = {
   variables: defaultSimulationInput,
   result: emptySimulationResult,
-  status: "idle",
+  status: "connecting",
   lastUpdated: null,
   serverError: null,
 };
@@ -71,8 +75,8 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-// Server frames are external data: error frames and malformed payloads must never
-// replace the result being rendered.
+// API responses are external data: malformed payloads must never replace the result
+// being rendered.
 function isSimulationResult(value: unknown): value is SimulationResult {
   if (typeof value !== "object" || value === null) return false;
   const record = value as Record<string, unknown>;
@@ -133,82 +137,77 @@ function simulateLocally(input: SimulationInput): SimulationResult {
   };
 }
 
+type RunOutcome =
+  | { kind: "result"; result: SimulationResult }
+  // The API answered but refused the input (422).
+  | { kind: "rejected" }
+  // Network failure, timeout, server error or malformed body.
+  | { kind: "unavailable" };
+
+async function requestSimulation(
+  vars: SimulationInput,
+  signal: AbortSignal
+): Promise<RunOutcome> {
+  try {
+    const response = await fetch(RUN_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(vars),
+      signal,
+    });
+    if (response.status === 422) return { kind: "rejected" };
+    if (!response.ok) return { kind: "unavailable" };
+
+    const body: unknown = await response.json();
+    const result =
+      typeof body === "object" && body !== null
+        ? (body as Record<string, unknown>).result
+        : null;
+    return isSimulationResult(result) ? { kind: "result", result } : { kind: "unavailable" };
+  } catch {
+    return { kind: "unavailable" };
+  }
+}
+
 export function useSimulationState() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const wsRef = useRef<WebSocket | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
   const variablesRef = useRef<SimulationInput>(defaultSimulationInput);
+
+  const runSimulation = useCallback((vars: SimulationInput) => {
+    // Only the latest request may update the screen; older ones are cancelled.
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    void requestSimulation(vars, controller.signal).then((outcome) => {
+      clearTimeout(timeout);
+      if (requestRef.current !== controller) return;
+
+      if (outcome.kind === "result") {
+        dispatch({ type: "setResult", result: outcome.result });
+        dispatch({ type: "setStatus", status: "live" });
+      } else if (outcome.kind === "rejected") {
+        dispatch({
+          type: "setServerError",
+          message:
+            "O servidor recusou os valores enviados; os resultados exibidos são os do último cálculo válido.",
+        });
+        dispatch({ type: "setStatus", status: "live" });
+      } else {
+        // Keep the UI responsive without the API.
+        dispatch({ type: "setResult", result: simulateLocally(vars) });
+        dispatch({ type: "setStatus", status: "error" });
+      }
+    });
+  }, []);
 
   useEffect(() => {
     dispatch({ type: "setResult", result: simulateLocally(defaultSimulationInput) });
-
-    const wsUrl =
-      process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws/simulate";
-    let socket: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-    let attempts = 0;
-    let disposed = false;
-
-    const connect = () => {
-      const ws = new WebSocket(wsUrl);
-      socket = ws;
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        attempts = 0;
-        dispatch({ type: "setStatus", status: "live" });
-        ws.send(JSON.stringify(variablesRef.current));
-      };
-
-      ws.onmessage = (event: MessageEvent) => {
-        let payload: unknown = null;
-        try {
-          payload = JSON.parse(String(event.data));
-        } catch {
-          // Treated as an unexpected frame below.
-        }
-        if (isSimulationResult(payload)) {
-          dispatch({ type: "setResult", result: payload });
-        } else {
-          dispatch({
-            type: "setServerError",
-            message:
-              "O servidor recusou a última atualização; os resultados exibidos são os do último cálculo válido.",
-          });
-        }
-      };
-
-      ws.onerror = () => dispatch({ type: "setStatus", status: "error" });
-      ws.onclose = () => {
-        if (wsRef.current === ws) wsRef.current = null;
-        if (disposed) return;
-        dispatch({ type: "setStatus", status: "idle" });
-        // Retry with exponential backoff so a dropped socket never needs a page reload.
-        const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
-        attempts += 1;
-        reconnectTimer = setTimeout(connect, delay);
-      };
-    };
-
-    dispatch({ type: "setStatus", status: "connecting" });
-    connect();
-
-    return () => {
-      disposed = true;
-      clearTimeout(reconnectTimer);
-      socket?.close();
-    };
-  }, []);
-
-  const sendVariables = (vars: SimulationInput) => {
-    const socket = wsRef.current;
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(vars));
-    } else {
-      // Keep UI responsive while the socket is down; status follows the socket itself.
-      dispatch({ type: "setResult", result: simulateLocally(vars) });
-    }
-  };
+    runSimulation(defaultSimulationInput);
+  }, [runSimulation]);
 
   const updateVariable = (key: keyof SimulationInput, value: number) => {
     // An empty or out-of-range field must never reach the server.
@@ -219,7 +218,7 @@ export function useSimulationState() {
     dispatch({ type: "setVar", key, value: safeValue });
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => sendVariables(variablesRef.current), 160);
+    debounceRef.current = setTimeout(() => runSimulation(variablesRef.current), DEBOUNCE_MS);
   };
 
   return {
