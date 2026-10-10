@@ -43,6 +43,29 @@ export const defaultSimulationInput: SimulationInput = {
   period_months: 12,
 };
 
+export type InputLimit = { min: number; max: number; integer?: boolean };
+
+// UI ranges for every input; values are clamped to them before sending. The API
+// bounds (backend/app/simulation/schemas.py) must never be stricter than these.
+export const simulationInputLimits: Record<keyof SimulationInput, InputLimit> = {
+  price: { min: 60, max: 220 },
+  variable_cost: { min: 10, max: 120 },
+  fixed_cost: { min: 5000, max: 80000 },
+  employees: { min: 5, max: 40, integer: true },
+  interest_rate: { min: 0, max: 0.25 },
+  tax_rate: { min: 0.05, max: 0.35 },
+  demand: { min: 200, max: 4000 },
+  marketing_spend: { min: 0, max: 40000 },
+  churn_rate: { min: 0, max: 0.25 },
+  price_sensitivity: { min: 0, max: 0.5 },
+  period_months: { min: 1, max: 24, integer: true },
+};
+
+export function clampToLimit(value: number, { min, max, integer }: InputLimit): number {
+  const bounded = Math.min(max, Math.max(min, value));
+  return integer ? Math.round(bounded) : bounded;
+}
+
 export const emptySimulationResult: SimulationResult = {
   monthly_profit: 0,
   annual_profit: 0,

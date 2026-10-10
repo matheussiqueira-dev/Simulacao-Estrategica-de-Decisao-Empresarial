@@ -13,3 +13,23 @@ backend/.env
 # OS / misc
 .DS_Store
 Thumbs.db
+
+# Secrets (only the examples are versioned)
+.env
+.env.*
+!.env.example
+
+# Tooling state
+.vercel/
+.cto-toolkit/
+.claude/settings.local.json
+.claude/launch.json
+
+# Python and test artifacts
+__pycache__/
+.pytest_cache/
+.venv*/
+venv/
+coverage/
+playwright-report/
+test-results/

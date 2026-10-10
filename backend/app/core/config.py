@@ -1,13 +1,16 @@
 import os
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     app_name: str = "Business Decision Simulator API"
     api_prefix: str = "/api"
-    websocket_route: str = "/ws/simulate"
+
+    # Vercel sets VERCEL=1 at build time and at runtime.
+    running_on_vercel: bool = Field(default=False, validation_alias="VERCEL")
 
     # Database
     database_url: str = (
