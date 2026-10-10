@@ -7,21 +7,22 @@ Plataforma web interativa para testar decisões estratégicas (preço, custos, m
 ---
 
 ## Destaques
-- Atualização em tempo real: sliders e inputs disparam cálculos via WebSocket; se o socket cair, há fallback local para manter a responsividade e reconexão automática (backoff exponencial até 30 s), sem recarregar a página.
-- Entradas tolerantes a erro: campo vazio ou inválido mostra mensagem inline e mantém o último valor válido; valores fora da faixa são limitados aos extremos. Nada disso derruba a conexão.
+- Atualização em tempo real: sliders e inputs disparam `POST /api/scenarios/run` com debounce de 160 ms; só a requisição mais recente atualiza a tela. Se a API não responder, há fallback local para manter a responsividade.
+- Entradas tolerantes a erro: campo vazio ou inválido mostra mensagem inline e mantém o último valor válido; valores fora da faixa são limitados aos extremos. Nada disso trava a simulação.
 - KPIs e gráficos dinâmicos: lucro, fluxo de caixa, margem de segurança, risco e projeção de receita/lucro nos próximos meses.
 - UX inspirada em cockpit financeiro (glassmorphism + gradientes) com layout 2 colunas: controles à esquerda, KPIs/gráficos à direita.
 - Engine vetorizada (NumPy/Pandas) para simulações rápidas e fácil extensão de fórmulas.
 
 ## Stack
 - **Frontend**: Next.js 16, React 19, Tailwind 3, Recharts, Playwright (screenshot demo).
-- **Backend**: FastAPI, WebSocket, Pydantic v2, SQLAlchemy (models), JWT stub.
+- **Backend**: FastAPI, Pydantic v2, SQLAlchemy (models), JWT stub (só local).
 - **Engine**: NumPy + Pandas (cálculo de lucro, caixa, risco, crescimento).
 - **DB**: PostgreSQL (models prontos; persistência futura).
 
 ## Arquitetura (visão rápida)
-- `frontend/` — UI, componentes (sliders, KPIs, chart), estado via `useSimulationState` (WebSocket + debounce).
-- `backend/app/main.py` — FastAPI + rota WS `/ws/simulate`.
+- `frontend/` — UI, componentes (sliders, KPIs, chart), estado via `useSimulationState` (fetch + debounce).
+- `backend/app/main.py` — FastAPI; todas as rotas públicas ficam sob `/api`.
+- `vercel.json` — deploy como um projeto Vercel com dois [Services](https://vercel.com/docs/services): `backend` e `frontend`.
 - `backend/app/simulation/engine.py` — motor de cálculo vetorizado.
 - `backend/app/api/routes/` — auth demo (JWT), cenários mock e health.
 
@@ -32,26 +33,49 @@ cd backend
 python -m venv .venv
 . .venv/Scripts/activate   # Windows
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --port 8000
 ```
 
 ### Frontend
 ```bash
 cd frontend
 npm install
-npm run dev -- --hostname 0.0.0.0 --port 3000
+cp .env.example .env.local   # NEXT_PUBLIC_API_URL=http://localhost:8000
+npm run dev -- --port 3000
 ```
 
-O frontend espera `ws://localhost:8000/ws/simulate`. Para apontar para outro host/porta, defina `NEXT_PUBLIC_WS_URL`.
+Por padrão o frontend chama a API na mesma origem (`/api/...`), como no Vercel. Com os dois servidores separados, defina `NEXT_PUBLIC_API_URL=http://localhost:8000` em `frontend/.env.local`; o backend libera CORS para as origens de `ALLOWED_ORIGINS` (array JSON; padrão `http://localhost:3000` e `http://127.0.0.1:3000`).
 
-O WebSocket só aceita handshakes cujo header `Origin` esteja em `ALLOWED_ORIGINS` (a mesma lista do CORS; padrão: `http://localhost:3000` e `http://127.0.0.1:3000`). Ao servir o frontend em outra origem, inclua-a no backend como array JSON, por exemplo `ALLOWED_ORIGINS='["https://seu-dominio.example"]'`.
+Com a [Vercel CLI](https://vercel.com/docs/cli), `vercel dev` sobe os dois serviços numa origem só, como em produção.
 
 ## Endpoints úteis
 - `GET /api/health` — liveness.
-- `POST /api/auth/login` — emite JWT de demonstração (sem persistência).
-- `GET /api/scenarios` — cenários mock.
-- `POST /api/scenarios/run` — executa simulação on-demand (JSON de variáveis).
-- `WS /ws/simulate` — envia variáveis, recebe KPIs e séries. Mensagem inválida recebe um frame `{"error": {"code": "validation_error", ...}}` e a conexão continua aberta.
+- `POST /api/auth/login` — emite JWT de demonstração (sem persistência). Só existe fora do Vercel.
+- `GET /api/scenarios/` — cenários mock.
+- `POST /api/scenarios/run` — executa a simulação (JSON de variáveis). Entrada vazia, fora da faixa, `NaN`/`Infinity` ou JSON inválido responde 422, sem ecoar o valor enviado.
+
+## Deploy na Vercel
+Um único projeto com [Vercel Services](https://vercel.com/docs/services) (Beta), configurado em `vercel.json`:
+
+| Serviço | Pasta | Framework | Rota pública |
+|---|---|---|---|
+| `backend` | `backend/` | FastAPI (`app.main:app`, Python 3.12) | `/api/*` |
+| `frontend` | `frontend/` | Next.js | todo o resto |
+
+- No projeto Vercel, o **Root Directory** é a raiz do repositório (onde está o `vercel.json`).
+- O frontend fala com o backend pela mesma origem; não há bindings entre serviços, porque nenhuma chamada sai do servidor Next.
+- O backend recebe o caminho original (`/api/...`), por isso as rotas do FastAPI já têm o prefixo `/api`.
+
+| Variável | Serviço | Obrigatória | Uso |
+|---|---|---|---|
+| `NEXT_PUBLIC_API_URL` | frontend | não | Base da API. Vazia no Vercel (mesma origem). |
+| `ALLOWED_ORIGINS` | backend | não | Origens liberadas no CORS, em array JSON. Só importa fora da mesma origem. |
+| `JWT_SECRET` | backend | não | Só usada pelo login demo, que não é registrado no Vercel. |
+
+O Vercel define `VERCEL=1`; o backend usa essa variável para não registrar o login demo em deploys públicos.
+
+## Dependências e auditoria
+`npm audit` não tem achados críticos. Os altos restantes vêm de `braces@3.0.3` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)), usado por `micromatch` no Tailwind 3 e no plugin ESLint do Next. Não existe versão corrigida do `braces`; o código roda só no build e no lint, com globs do próprio projeto, e não vai para o navegador nem para a Function. A saída definitiva é migrar para o Tailwind 4.
 
 ## Variáveis simuladas (payload)
 ```json
@@ -75,15 +99,15 @@ O WebSocket só aceita handshakes cujo header `Origin` esteja em `ALLOWED_ORIGIN
 - Backend: `uvicorn app.main:app --reload`; testes com `pip install -r requirements-dev.txt` e `python -m pytest`.
 
 ## Próximos passos sugeridos
-- Persistir usuários/cenários (PostgreSQL + Alembic) e proteger WS com JWT.
-- Rate limiting no WS + debounce configurável.
+- Persistir usuários/cenários (PostgreSQL + Alembic).
+- Rate limit em `POST /api/scenarios/run` (regra WAF do Vercel).
 - Testes automatizados: PyTest (engine), React Testing Library / Playwright (UI).
 - Migração para ambiente de produção (build Next + gunicorn/uvicorn workers).
 
 ## Sobre o GIF
 O arquivo `docs/demo.gif` foi gerado a partir da UI atual. Para recriar:
 1) Inicie frontend e backend (`npm run dev` + `uvicorn ...`).  
-2) Gere o PNG: `cd frontend && node scripts/screenshot.js` (usa Playwright headless).  
+2) Gere o PNG: `cd frontend && node scripts/screenshot.mjs` (Playwright headless no Edge instalado; troque com `PLAYWRIGHT_CHANNEL`).  
 3) Converta para GIF:  
 ```bash
 python - <<'PY'
