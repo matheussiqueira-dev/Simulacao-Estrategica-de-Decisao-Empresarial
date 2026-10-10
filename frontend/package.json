@@ -2,6 +2,16 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "author": "Matheus Siqueira <hellomatheusdev@gmail.com> (https://www.matheussiqueira.dev)",
+  "homepage": "https://simulacao-estrategica-decisao.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matheussiqueira-dev/Simulacao-Estrategica-de-Decisao-Empresarial.git",
+    "directory": "frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/matheussiqueira-dev/Simulacao-Estrategica-de-Decisao-Empresarial/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
