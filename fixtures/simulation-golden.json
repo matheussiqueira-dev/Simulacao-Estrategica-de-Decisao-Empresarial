@@ -1,0 +1,660 @@
+{
+  "cases": [
+    {
+      "name": "default",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 1168.0,
+        "annual_profit": 14016.0,
+        "cash_flow": 978.0,
+        "safety_margin": 0.018,
+        "growth_rate": -0.589,
+        "risk_index": 0.982,
+        "revenue_series": [
+          11568.0,
+          11440.48,
+          11155.75,
+          10654.63,
+          9942.04,
+          9079.54,
+          8162.79,
+          7291.45,
+          6540.83,
+          5943.37,
+          5484.4,
+          5112.12
+        ],
+        "profit_series": [
+          -172.67,
+          -252.36,
+          -430.33,
+          -743.52,
+          -1188.89,
+          -1727.95,
+          -2300.92,
+          -2845.51,
+          -3314.65,
+          -3688.06,
+          -3974.92,
+          -4207.59
+        ]
+      }
+    },
+    {
+      "name": "premium_price_sensitive",
+      "input": {
+        "price": 220.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.5,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 88768.0,
+        "annual_profit": 1065216.0,
+        "cash_flow": 87378.0,
+        "safety_margin": 0.579,
+        "growth_rate": -1.2,
+        "risk_index": 0.421,
+        "revenue_series": [
+          13200.0,
+          12355.2,
+          11291.62,
+          9979.2,
+          8468.71,
+          6864.0,
+          5280.0,
+          3801.6,
+          2457.1,
+          1214.4,
+          0.0,
+          -1267.2
+        ],
+        "profit_series": [
+          397.33,
+          -274.67,
+          -1120.7,
+          -2164.67,
+          -3366.19,
+          -4642.67,
+          -5902.67,
+          -7078.67,
+          -8148.16,
+          -9136.67,
+          -10102.67,
+          -11110.67
+        ]
+      }
+    },
+    {
+      "name": "thin_margin",
+      "input": {
+        "price": 60.0,
+        "variable_cost": 50.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": -76400.0,
+        "annual_profit": -916800.0,
+        "cash_flow": -75870.0,
+        "safety_margin": -6.367,
+        "growth_rate": -0.157,
+        "risk_index": 1.0,
+        "revenue_series": [
+          6432.0,
+          6601.91,
+          6697.97,
+          6674.38,
+          6518.32,
+          6252.45,
+          5927.96,
+          5610.2,
+          5360.89,
+          5221.87,
+          5204.51,
+          5287.61
+        ],
+        "profit_series": [
+          -6294.67,
+          -6266.35,
+          -6250.34,
+          -6254.27,
+          -6280.28,
+          -6324.59,
+          -6378.67,
+          -6431.63,
+          -6473.19,
+          -6496.36,
+          -6499.25,
+          -6485.4
+        ]
+      }
+    },
+    {
+      "name": "loss_making",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 80000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": -128400.0,
+        "annual_profit": -1540800.0,
+        "cash_flow": -124640.0,
+        "safety_margin": -8.56,
+        "growth_rate": -0.589,
+        "risk_index": 1.0,
+        "revenue_series": [
+          1928.0,
+          1906.75,
+          1859.29,
+          1775.77,
+          1657.01,
+          1513.26,
+          1360.47,
+          1215.24,
+          1090.14,
+          990.56,
+          914.07,
+          852.02
+        ],
+        "profit_series": [
+          -10745.0,
+          -10758.28,
+          -10787.94,
+          -10840.14,
+          -10914.37,
+          -11004.21,
+          -11099.71,
+          -11190.47,
+          -11268.66,
+          -11330.9,
+          -11378.71,
+          -11417.49
+        ]
+      }
+    },
+    {
+      "name": "no_marketing",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 0.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 9928.0,
+        "annual_profit": 119136.0,
+        "cash_flow": 9738.0,
+        "safety_margin": 0.151,
+        "growth_rate": -0.6,
+        "risk_index": 0.849,
+        "revenue_series": [
+          11568.0,
+          11429.18,
+          11132.51,
+          10619.42,
+          9895.56,
+          9023.04,
+          8097.6,
+          7218.43,
+          6459.93,
+          5853.41,
+          5383.27,
+          4997.38
+        ],
+        "profit_series": [
+          557.33,
+          470.57,
+          285.15,
+          -35.53,
+          -487.94,
+          -1033.27,
+          -1611.67,
+          -2161.15,
+          -2635.21,
+          -3014.29,
+          -3308.12,
+          -3549.31
+        ]
+      }
+    },
+    {
+      "name": "max_marketing",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 40000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": -26400.0,
+        "annual_profit": -316800.0,
+        "cash_flow": -26590.0,
+        "safety_margin": -0.293,
+        "growth_rate": -0.587,
+        "risk_index": 1.0,
+        "revenue_series": [
+          11568.0,
+          11441.93,
+          11158.72,
+          10659.14,
+          9947.99,
+          9086.78,
+          8171.15,
+          7300.81,
+          6551.2,
+          5954.91,
+          5497.36,
+          5126.82
+        ],
+        "profit_series": [
+          -2470.0,
+          -2548.79,
+          -2725.8,
+          -3038.04,
+          -3482.5,
+          -4020.76,
+          -4593.03,
+          -5137.0,
+          -5605.5,
+          -5978.18,
+          -6264.15,
+          -6495.74
+        ]
+      }
+    },
+    {
+      "name": "one_month",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 1
+      },
+      "expected": {
+        "monthly_profit": 1168.0,
+        "annual_profit": 14016.0,
+        "cash_flow": -14862.0,
+        "safety_margin": 0.018,
+        "growth_rate": -0.589,
+        "risk_index": 0.982,
+        "revenue_series": [
+          138816.0
+        ],
+        "profit_series": [
+          -2072.0
+        ]
+      }
+    },
+    {
+      "name": "two_years",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 24
+      },
+      "expected": {
+        "monthly_profit": 1168.0,
+        "annual_profit": 14016.0,
+        "cash_flow": 1698.0,
+        "safety_margin": 0.018,
+        "growth_rate": -0.589,
+        "risk_index": 0.982,
+        "revenue_series": [
+          5784.0,
+          5720.24,
+          5577.87,
+          5327.31,
+          4971.02,
+          4539.77,
+          4081.4,
+          3645.72,
+          3270.41,
+          2971.69,
+          2742.2,
+          2556.06,
+          2378.79,
+          2178.83,
+          1936.75,
+          1649.69,
+          1329.89,
+          998.36,
+          676.19,
+          376.73,
+          101.13,
+          -161.1,
+          -427.09,
+          -712.94
+        ],
+        "profit_series": [
+          -86.33,
+          -126.18,
+          -215.16,
+          -371.76,
+          -594.45,
+          -863.98,
+          -1150.46,
+          -1422.76,
+          -1657.32,
+          -1844.03,
+          -1987.46,
+          -2103.8,
+          -2214.59,
+          -2339.57,
+          -2490.87,
+          -2670.28,
+          -2870.15,
+          -3077.36,
+          -3278.71,
+          -3465.88,
+          -3638.13,
+          -3802.02,
+          -3968.26,
+          -4146.92
+        ]
+      }
+    },
+    {
+      "name": "high_churn",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.25,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 1168.0,
+        "annual_profit": 14016.0,
+        "cash_flow": 978.0,
+        "safety_margin": 0.018,
+        "growth_rate": -1.2,
+        "risk_index": 0.982,
+        "revenue_series": [
+          11568.0,
+          10827.65,
+          9895.56,
+          8745.41,
+          7421.67,
+          6015.36,
+          4627.2,
+          3331.58,
+          2153.31,
+          1064.26,
+          0.0,
+          -1110.53
+        ],
+        "profit_series": [
+          -172.67,
+          -635.39,
+          -1217.94,
+          -1936.79,
+          -2764.12,
+          -3643.07,
+          -4510.67,
+          -5320.43,
+          -6056.85,
+          -6737.51,
+          -7402.67,
+          -8096.75
+        ]
+      }
+    },
+    {
+      "name": "no_interest_low_tax",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.0,
+        "tax_rate": 0.05,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 2470.0,
+        "annual_profit": 29640.0,
+        "cash_flow": 2280.0,
+        "safety_margin": 0.029,
+        "growth_rate": -0.589,
+        "risk_index": 0.971,
+        "revenue_series": [
+          11568.0,
+          11440.48,
+          11155.75,
+          10654.63,
+          9942.04,
+          9079.54,
+          8162.79,
+          7291.45,
+          6540.83,
+          5943.37,
+          5484.4,
+          5112.12
+        ],
+        "profit_series": [
+          -64.17,
+          -143.86,
+          -321.83,
+          -635.02,
+          -1080.39,
+          -1619.45,
+          -2192.42,
+          -2737.01,
+          -3206.15,
+          -3579.56,
+          -3866.42,
+          -4099.09
+        ]
+      }
+    },
+    {
+      "name": "max_scale",
+      "input": {
+        "price": 120.0,
+        "variable_cost": 45.0,
+        "fixed_cost": 25000.0,
+        "employees": 40,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 4000.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": 68620.0,
+        "annual_profit": 823440.0,
+        "cash_flow": 65070.0,
+        "safety_margin": 0.313,
+        "growth_rate": -0.589,
+        "risk_index": 0.687,
+        "revenue_series": [
+          38560.0,
+          38134.95,
+          37185.82,
+          35515.43,
+          33140.12,
+          30265.14,
+          27209.31,
+          24304.83,
+          21802.76,
+          19811.25,
+          18281.33,
+          17040.39
+        ],
+        "profit_series": [
+          4818.33,
+          4552.68,
+          3959.47,
+          2915.48,
+          1430.91,
+          -365.96,
+          -2275.85,
+          -4091.15,
+          -5654.94,
+          -6899.64,
+          -7855.83,
+          -8631.43
+        ]
+      }
+    },
+    {
+      "name": "negative_contribution",
+      "input": {
+        "price": 60.0,
+        "variable_cost": 120.0,
+        "fixed_cost": 25000.0,
+        "employees": 12,
+        "interest_rate": 0.08,
+        "tax_rate": 0.27,
+        "demand": 1200.0,
+        "marketing_spend": 12000.0,
+        "churn_rate": 0.04,
+        "price_sensitivity": 0.18,
+        "period_months": 12
+      },
+      "expected": {
+        "monthly_profit": -160400.0,
+        "annual_profit": -1924800.0,
+        "cash_flow": -159870.0,
+        "safety_margin": -73665.667,
+        "growth_rate": -0.157,
+        "risk_index": 1.0,
+        "revenue_series": [
+          6432.0,
+          6601.91,
+          6697.97,
+          6674.38,
+          6518.32,
+          6252.45,
+          5927.96,
+          5610.2,
+          5360.89,
+          5221.87,
+          5204.51,
+          5287.61
+        ],
+        "profit_series": [
+          -13798.67,
+          -13968.58,
+          -14064.64,
+          -14041.05,
+          -13884.98,
+          -13619.11,
+          -13294.63,
+          -12976.86,
+          -12727.55,
+          -12588.53,
+          -12571.18,
+          -12654.28
+        ]
+      }
+    },
+    {
+      "name": "all_minimums",
+      "input": {
+        "price": 60.0,
+        "variable_cost": 10.0,
+        "fixed_cost": 5000.0,
+        "employees": 5,
+        "interest_rate": 0.0,
+        "tax_rate": 0.05,
+        "demand": 200.0,
+        "marketing_spend": 0.0,
+        "churn_rate": 0.0,
+        "price_sensitivity": 0.0,
+        "period_months": 1
+      },
+      "expected": {
+        "monthly_profit": -16000.0,
+        "annual_profit": -192000.0,
+        "cash_flow": -17190.0,
+        "safety_margin": -1.6,
+        "growth_rate": 0.12,
+        "risk_index": 1.0,
+        "revenue_series": [
+          12000.0
+        ],
+        "profit_series": [
+          -16000.0
+        ]
+      }
+    }
+  ]
+}
