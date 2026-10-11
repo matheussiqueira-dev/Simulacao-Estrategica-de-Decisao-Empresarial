@@ -162,29 +162,21 @@ export default function Home() {
                 title="Lucro mensal"
                 value={formatCurrency(result.monthly_profit)}
                 note="após impostos"
-                trend={result.growth_rate * 100}
-                accent="green"
               />
               <KpiCard
                 title="Fluxo de caixa"
                 value={formatCurrency(result.cash_flow)}
                 note="livre"
-                trend={result.cash_flow >= 0 ? 3.4 : -2.1}
-                accent="blue"
               />
               <KpiCard
                 title="Margem de segurança"
                 value={formatPercent(result.safety_margin)}
                 note="vs. ponto de equilíbrio"
-                trend={result.safety_margin * 100}
-                accent="amber"
               />
               <KpiCard
                 title="Risco"
                 value={`${(result.risk_index * 100).toFixed(0)} / 100`}
                 note="quanto menor melhor"
-                trend={-result.risk_index * 100}
-                accent="green"
               />
             </div>
 
