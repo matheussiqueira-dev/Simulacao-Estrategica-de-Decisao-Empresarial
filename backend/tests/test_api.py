@@ -1,12 +1,6 @@
-import importlib
-from collections.abc import Iterator
-
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import app.main as main_module
-from app.core.config import get_settings
 from app.main import app
 
 RUN_URL = "/api/scenarios/run"
@@ -69,40 +63,12 @@ def test_run_accepts_ui_range_limits(client: TestClient, payload: dict[str, floa
     assert client.post(RUN_URL, json=payload).status_code == 200
 
 
-@pytest.fixture
-def reload_app(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """Rebuild app.main under the current environment, and restore it afterwards."""
-    yield
-    monkeypatch.delenv("VERCEL", raising=False)
-    get_settings.cache_clear()
-    importlib.reload(main_module)
+def test_health_and_scenarios_respond(client: TestClient) -> None:
+    assert client.get("/api/health").json() == {"status": "ok"}
+    scenarios = client.get("/api/scenarios/").json()["scenarios"]
+    assert [s["name"] for s in scenarios] == ["Base case", "High marketing"]
 
 
-def build_app(monkeypatch: pytest.MonkeyPatch, vercel: str | None) -> FastAPI:
-    if vercel is None:
-        monkeypatch.delenv("VERCEL", raising=False)
-    else:
-        monkeypatch.setenv("VERCEL", vercel)
-    get_settings.cache_clear()
-    return importlib.reload(main_module).app
-
-
-def test_demo_login_is_not_served_on_vercel(
-    monkeypatch: pytest.MonkeyPatch, reload_app: None
-) -> None:
-    vercel_client = TestClient(build_app(monkeypatch, "1"))
-    response = vercel_client.post(
-        "/api/auth/login", json={"email": "a@example.com", "password": "x"}
-    )
+def test_demo_login_no_longer_exists(client: TestClient) -> None:
+    response = client.post("/api/auth/login", json={"email": "a@example.com", "password": "x"})
     assert response.status_code == 404
-    assert vercel_client.get("/api/health").status_code == 200
-
-
-def test_demo_login_is_served_locally(
-    monkeypatch: pytest.MonkeyPatch, reload_app: None
-) -> None:
-    local_client = TestClient(build_app(monkeypatch, None))
-    response = local_client.post(
-        "/api/auth/login", json={"email": "a@example.com", "password": "x"}
-    )
-    assert response.status_code == 200

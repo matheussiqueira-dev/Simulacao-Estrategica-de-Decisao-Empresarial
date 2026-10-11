@@ -3,12 +3,16 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import auth, health, scenarios
+from app.api.routes import health, scenarios
 from app.core.config import get_settings
 
 settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
+    description=(
+        "Reference API for the simulation engine. The public demo computes in the browser "
+        "with the TypeScript port; this service is for local use and parity tests."
+    ),
     contact={
         "name": "Matheus Siqueira",
         "url": "https://www.matheussiqueira.dev",
@@ -19,15 +23,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["content-type"],
 )
 
-# The demo login signs a token for any credentials, so it stays out of public
-# Vercel deployments and only exists when running locally.
-if not settings.running_on_vercel:
-    app.include_router(auth.router, prefix=f"{settings.api_prefix}/auth", tags=["auth"])
 app.include_router(
     scenarios.router, prefix=f"{settings.api_prefix}/scenarios", tags=["scenarios"]
 )
@@ -49,8 +49,5 @@ async def request_validation_handler(
 
 
 @app.get("/")
-async def index():
-    return {
-        "name": settings.app_name,
-        "docs": "/docs",
-    }
+async def index() -> dict[str, str]:
+    return {"name": settings.app_name, "docs": "/docs"}
