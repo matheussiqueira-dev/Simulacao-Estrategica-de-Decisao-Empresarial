@@ -5,7 +5,13 @@ import { VariableSlider } from "./components/VariableSlider";
 import { KpiCard } from "./components/KpiCard";
 import { useSimulationState } from "./hooks/useSimulationState";
 import { PORTFOLIO_CASE_URL, REPO_URL } from "./site";
-import { SimulationInput, simulationInputLimits } from "./types";
+import {
+  formatCurrency,
+  formatInteger,
+  formatMonthShort,
+  formatPercent,
+} from "@/lib/simulation/format";
+import { type SimulationInput, simulationInputLimits } from "@/lib/simulation/limits";
 
 const projectLinkClass =
   "rounded-full px-3 py-2 text-sm text-slate-300 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400";
@@ -20,19 +26,19 @@ const sliderConfig: {
   {
     key: "price",
     label: "Preço de venda",
-    unit: "$",
+    unit: "R$",
     step: 1,
     hint: "Elasticidade afeta demanda",
   },
   {
     key: "variable_cost",
     label: "Custo variável",
-    unit: "$",
+    unit: "R$",
   },
   {
     key: "fixed_cost",
     label: "Custos fixos / mês",
-    unit: "$",
+    unit: "R$",
     step: 500,
   },
   {
@@ -62,7 +68,7 @@ const sliderConfig: {
     key: "marketing_spend",
     label: "Marketing / mês",
     step: 500,
-    unit: "$",
+    unit: "R$",
   },
   {
     key: "churn_rate",
@@ -76,21 +82,8 @@ const sliderConfig: {
   },
 ];
 
-function formatCurrency(value: number) {
-  return value.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
-}
-
-function formatPercent(value: number) {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
 export default function Home() {
-  const { state, updateVariable } = useSimulationState();
-  const { result, status, variables, serverError } = state;
+  const { variables, result, months, updateVariable } = useSimulationState();
 
   const riskWidth = `${Math.min(100, Math.max(0, result.risk_index * 100))}%`;
 
@@ -128,27 +121,8 @@ export default function Home() {
                 year: "numeric",
               })}
             </span>
-            <span
-              role="status"
-              className={`rounded-full px-4 py-2 text-xs font-semibold ${
-                status === "live"
-                  ? "bg-green-500/15 text-green-300 border border-green-400/40"
-                  : status === "connecting"
-                  ? "bg-amber-400/10 text-amber-200 border border-amber-300/40"
-                  : "bg-red-500/10 text-red-200 border border-red-300/40"
-              }`}
-            >
-              {status === "live"
-                ? "Conectado"
-                : status === "connecting"
-                ? "Conectando..."
-                : "Offline / modo local"}
-            </span>
           </div>
         </header>
-        <p role="status" className={`text-sm text-amber-200 ${serverError ? "mt-3" : ""}`}>
-          {serverError}
-        </p>
 
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
           <section className="space-y-4">
@@ -224,12 +198,7 @@ export default function Home() {
                 </div>
                 <p className="text-sm text-slate-300">
                   Breakeven:{" "}
-                  {(
-                    (variables.fixed_cost +
-                      variables.employees * 4200 +
-                      variables.marketing_spend) /
-                    Math.max(variables.price - variables.variable_cost, 1)
-                  ).toLocaleString("en-US", { maximumFractionDigits: 0 })}{" "}
+                  {formatInteger(result.breakeven_units)}{" "}
                   unidades
                 </p>
               </div>
@@ -252,7 +221,9 @@ export default function Home() {
             </div>
 
             <SimulationChart
-              labels={result.month_labels}
+              labels={result.revenue_series.map((_, index) =>
+                months ? formatMonthShort(months[index]) : `Mês ${index + 1}`,
+              )}
               revenue={result.revenue_series}
               profit={result.profit_series}
             />

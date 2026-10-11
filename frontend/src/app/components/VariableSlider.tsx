@@ -3,6 +3,8 @@
 import { useId, useState } from "react";
 import clsx from "clsx";
 
+import { parseDecimal } from "@/lib/simulation/parse";
+
 type VariableSliderProps = {
   label: string;
   value: number;
@@ -16,16 +18,8 @@ type VariableSliderProps = {
 
 type Feedback = { kind: "error" | "info"; text: string } | null;
 
-/** Accepts "1234.5" or the pt-BR "1234,5"; anything else is not a number. */
-function parseDecimal(raw: string): number | null {
-  const normalized = raw.trim().replace(",", ".");
-  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(normalized)) return null;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function formatLimit(value: number) {
-  return value.toLocaleString("en-US", { maximumFractionDigits: 3 });
+  return value.toLocaleString("pt-BR", { maximumFractionDigits: 3 });
 }
 
 export function VariableSlider({
@@ -92,7 +86,7 @@ export function VariableSlider({
         </div>
         <div className="text-right">
           <p className="text-lg font-bold text-slate-50">
-            {value.toLocaleString("en-US", {
+            {value.toLocaleString("pt-BR", {
               maximumFractionDigits: 2,
               minimumFractionDigits: step < 1 ? 1 : 0,
             })}
