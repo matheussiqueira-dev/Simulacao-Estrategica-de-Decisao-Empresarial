@@ -7,7 +7,14 @@ from app.api.routes import auth, health, scenarios
 from app.core.config import get_settings
 
 settings = get_settings()
-app = FastAPI(title=settings.app_name)
+app = FastAPI(
+    title=settings.app_name,
+    contact={
+        "name": "Matheus Siqueira",
+        "url": "https://www.matheussiqueira.dev",
+        "email": "hellomatheusdev@gmail.com",
+    },
+)
 
 app.add_middleware(
     CORSMiddleware,

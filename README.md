@@ -2,6 +2,10 @@
 
 Plataforma web interativa para testar decisões estratégicas (preço, custos, marketing, equipe, juros, impostos) e visualizar instantaneamente impacto em lucro, caixa, crescimento e risco.
 
+[![Demo ao vivo](https://img.shields.io/badge/Demo-ao_vivo-00f2fe?style=for-the-badge&logo=vercel&logoColor=000000)](https://simulacao-estrategica-decisao.vercel.app)
+[![Case no portfólio](https://img.shields.io/badge/Case-Portf%C3%B3lio-000000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.matheussiqueira.dev/pt-BR/projects/business-decision-simulator)
+[![Código](https://img.shields.io/badge/C%C3%B3digo-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/matheussiqueira-dev/Simulacao-Estrategica-de-Decisao-Empresarial)
+
 ![Demonstração](docs/demo.gif)
 
 ---
@@ -117,3 +121,16 @@ img.save('docs/demo.gif', save_all=True, append_images=[img], duration=1200, loo
 PY
 ```  
 4) Faça o commit: `git add docs/demo.gif`.
+
+---
+
+### Desenvolvido por Matheus Siqueira
+
+**Analista de Dados & BI | Power BI • SQL • Python • DAX | ETL, Modelagem de Dados, KPIs e Automação**
+
+Conecte-se e acesse meus projetos:
+
+[![Portfólio](https://img.shields.io/badge/Portf%C3%B3lio-matheussiqueira.dev-000000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.matheussiqueira.dev)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Matheus_Siqueira-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/matheussiqueira-dev)
+[![GitHub](https://img.shields.io/badge/GitHub-matheussiqueira--dev-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/matheussiqueira-dev)
+[![E-mail](https://img.shields.io/badge/E--mail-hellomatheusdev%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:hellomatheusdev@gmail.com)
