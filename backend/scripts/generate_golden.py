@@ -68,7 +68,7 @@ def main() -> None:
     engine = SimulationEngine()
     cases = []
     for name, overrides in CASES.items():
-        data = SimulationInput(**overrides)
+        data = SimulationInput.model_validate(overrides)
         result = engine.run(data).model_dump()
         cases.append(
             {
