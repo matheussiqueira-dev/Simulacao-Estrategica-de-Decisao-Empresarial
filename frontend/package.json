@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": "24.x"
+  },
   "author": "Matheus Siqueira <hellomatheusdev@gmail.com> (https://www.matheussiqueira.dev)",
   "homepage": "https://simulacao-estrategica-decisao.vercel.app",
   "repository": {
