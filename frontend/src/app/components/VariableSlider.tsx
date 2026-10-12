@@ -1,40 +1,64 @@
-"use client";
-
 import { useId, useState } from "react";
 import clsx from "clsx";
 
+import { formatEditable } from "@/lib/simulation/format";
+import type { InputLimit } from "@/lib/simulation/limits";
 import { parseDecimal } from "@/lib/simulation/parse";
+
+export type FieldDisplay = {
+  /** Adornment next to the number field, outside the editable text ("R$", "%"). */
+  unit?: string;
+  unitPosition?: "prefix" | "suffix";
+  /** Engine value × scale = displayed value (rates are stored as decimals, shown in %). */
+  scale?: number;
+  /** Step of the slider, in displayed units. */
+  step: number;
+  /** Decimals accepted and shown in the number field. */
+  fractionDigits: number;
+};
 
 type VariableSliderProps = {
   label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  unit?: string;
   hint?: string;
+  /** Current value, in engine units. */
+  value: number;
+  /** Allowed range, in engine units. */
+  limit: InputLimit;
+  display: FieldDisplay;
+  /** Formatted current value for the <output> next to the label. */
+  formattedValue: string;
+  /** Receives the new value in engine units. */
   onChange: (next: number) => void;
 };
 
 type Feedback = { kind: "error" | "info"; text: string } | null;
 
-function formatLimit(value: number) {
-  return value.toLocaleString("pt-BR", { maximumFractionDigits: 3 });
-}
+// Display conversions round away binary noise (0.05 × 100 = 5.000000000000001).
+const toDisplay = (value: number, scale: number) => Math.round(value * scale * 1e6) / 1e6;
 
 export function VariableSlider({
   label,
-  value,
-  min,
-  max,
-  step = 1,
-  unit,
   hint,
+  value,
+  limit,
+  display,
+  formattedValue,
   onChange,
 }: VariableSliderProps) {
   const id = useId();
   const labelId = `${id}-label`;
+  const rangeId = `${id}-range`;
+  const fieldId = `${id}-field`;
+  const hintId = `${id}-hint`;
   const feedbackId = `${id}-feedback`;
+
+  const scale = display.scale ?? 1;
+  const min = toDisplay(limit.min, scale);
+  const max = toDisplay(limit.max, scale);
+  const shown = toDisplay(value, scale);
+  const showLimit = (n: number) => formatEditable(n, display.fractionDigits);
+  const emit = (displayValue: number) => onChange(displayValue / scale);
+
   // Text typed in the number field; null while the field mirrors `value`.
   const [draft, setDraft] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -45,7 +69,7 @@ export function VariableSlider({
     // Only in-range numbers update the simulation while typing; the rest is judged on blur.
     if (parsed !== null && parsed >= min && parsed <= max) {
       setFeedback(null);
-      onChange(parsed);
+      emit(parsed);
     }
   };
 
@@ -56,7 +80,7 @@ export function VariableSlider({
       const problem = draft.trim() === "" ? "Campo vazio." : "Valor inválido.";
       setFeedback({
         kind: "error",
-        text: `${problem} Digite um número entre ${formatLimit(min)} e ${formatLimit(max)}; a simulação segue com ${formatLimit(value)}.`,
+        text: `${problem} Digite um número entre ${showLimit(min)} e ${showLimit(max)}; a simulação segue com ${showLimit(shown)}.`,
       });
       return;
     }
@@ -66,86 +90,88 @@ export function VariableSlider({
     setFeedback(
       clamped === parsed
         ? null
-        : { kind: "info", text: `Fora da faixa; ajustado para ${formatLimit(clamped)}.` }
+        : { kind: "info", text: `Fora da faixa; ajustado para ${showLimit(clamped)}.` }
     );
-    if (clamped !== value) onChange(clamped);
+    if (clamped !== shown) emit(clamped);
   };
 
   const invalid = feedback?.kind === "error";
+  const unit = display.unit ? (
+    <span className="shrink-0 text-small text-fg-secondary" aria-hidden="true">
+      {display.unit}
+    </span>
+  ) : null;
 
   return (
-    <div className="glass-panel rounded-2xl p-4 shadow-glass transition-all hover:shadow-glow-green">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p id={labelId} className="text-sm font-semibold text-slate-200">
-            {label}
-          </p>
-          {hint ? (
-            <p className="text-xs text-slate-400">{hint}</p>
-          ) : null}
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-slate-50">
-            {value.toLocaleString("pt-BR", {
-              maximumFractionDigits: 2,
-              minimumFractionDigits: step < 1 ? 1 : 0,
-            })}
-            {unit ? <span className="ml-1 text-xs text-slate-400">{unit}</span> : null}
-          </p>
-        </div>
+    <div className="py-5 first:pt-0 last:pb-0">
+      <div className="flex items-baseline justify-between gap-3">
+        <label id={labelId} htmlFor={fieldId} className="text-small font-semibold text-fg">
+          {label}
+        </label>
+        <output htmlFor={`${rangeId} ${fieldId}`} className="ms-num text-small text-fg-secondary">
+          {formattedValue}
+        </output>
       </div>
+      {hint ? (
+        <p id={hintId} className="mt-1 text-caption text-fg-secondary">
+          {hint}
+        </p>
+      ) : null}
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 flex min-h-control items-center">
         <input
-          id={id}
+          id={rangeId}
           type="range"
           min={min}
           max={max}
-          step={step}
-          value={value}
+          step={display.step}
+          value={shown}
           aria-labelledby={labelId}
-          onChange={(e) => {
+          aria-describedby={hint ? hintId : undefined}
+          onChange={(event) => {
             setDraft(null);
             setFeedback(null);
-            onChange(Number(e.target.value));
+            emit(Number(event.target.value));
           }}
+          className="w-full cursor-pointer"
+        />
+      </div>
+      <div className="flex justify-between text-micro text-fg-tertiary" aria-hidden="true">
+        <span className="ms-num">{showLimit(min)}</span>
+        <span className="ms-num">{showLimit(max)}</span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        {display.unitPosition === "prefix" ? unit : null}
+        <input
+          id={fieldId}
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          value={draft ?? formatEditable(shown, display.fractionDigits)}
+          aria-invalid={invalid || undefined}
+          aria-describedby={[hint ? hintId : null, feedbackId].filter(Boolean).join(" ")}
+          onChange={(event) => handleTyping(event.target.value)}
+          onBlur={handleBlur}
           className={clsx(
-            "h-2 w-full appearance-none rounded-full bg-slate-800",
-            "accent-green-400"
+            "ms-num h-control w-full min-w-0 rounded-control border bg-canvas px-3 text-right text-body text-fg",
+            "transition-colors duration-micro ease-creative",
+            invalid ? "border-danger" : "border-line-control hover:border-line-control-hover"
           )}
         />
-        <div className="flex items-center gap-2 rounded-lg bg-slate-900/60 px-3 py-2">
-          <input
-            type="text"
-            inputMode="decimal"
-            autoComplete="off"
-            value={draft ?? String(value)}
-            aria-labelledby={labelId}
-            aria-invalid={invalid || undefined}
-            aria-describedby={feedbackId}
-            onChange={(e) => handleTyping(e.target.value)}
-            onBlur={handleBlur}
-            className={clsx(
-              "w-full rounded-md border bg-slate-950/60 px-2 py-1 text-sm outline-none ring-0 focus:bg-slate-900",
-              invalid
-                ? "border-red-400 focus:border-red-400"
-                : "border-slate-800 focus:border-green-400"
-            )}
-          />
-          {unit ? (
-            <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
-              {unit}
-            </span>
-          ) : null}
-        </div>
-        <p
-          id={feedbackId}
-          aria-live="polite"
-          className={clsx("text-xs", invalid ? "text-red-300" : "text-slate-400")}
-        >
-          {feedback?.text}
-        </p>
+        {display.unitPosition === "prefix" ? null : unit}
       </div>
+      <p
+        id={feedbackId}
+        aria-live="polite"
+        className={clsx(
+          "text-caption",
+          feedback ? "mt-2" : null,
+          invalid ? "text-danger" : "text-fg-secondary"
+        )}
+      >
+        {feedback?.text}
+      </p>
     </div>
   );
 }
