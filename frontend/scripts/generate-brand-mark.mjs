@@ -72,11 +72,16 @@ function icoFromPng(png, size) {
   return Buffer.concat([header, png]);
 }
 
+// Render everything before writing anything: a failed render (it throws, and the
+// script exits non-zero) leaves the committed icons untouched instead of half updated.
+const favicon = icoFromPng(await renderPng(32), 32);
+const icon512 = await renderPng(512);
+
 writeFileSync(new URL("../src/app/icon.svg", import.meta.url), iconSvg);
 writeFileSync(new URL("../src/app/brand-mark.ts", import.meta.url), brandModule);
-writeFileSync(new URL("../src/app/favicon.ico", import.meta.url), icoFromPng(await renderPng(32), 32));
+writeFileSync(new URL("../src/app/favicon.ico", import.meta.url), favicon);
 mkdirSync(new URL("../public/", import.meta.url), { recursive: true });
-writeFileSync(new URL("../public/icon-512.png", import.meta.url), await renderPng(512));
+writeFileSync(new URL("../public/icon-512.png", import.meta.url), icon512);
 console.log(
   `Wrote src/app/icon.svg, src/app/brand-mark.ts, src/app/favicon.ico and public/icon-512.png ` +
     `(${monogramPath.length} chars of path data)`,
