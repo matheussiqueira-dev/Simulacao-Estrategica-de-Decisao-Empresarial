@@ -82,25 +82,73 @@
     gap: var(--ms-space-1);
   }
 
-  .ms-header__nav a {
+  .ms-header__link {
+    position: relative;
     display: inline-flex;
     min-height: var(--ms-control-height);
     align-items: center;
+    gap: var(--ms-space-2);
     padding-inline: var(--ms-space-3);
     border-radius: var(--ms-radius-control);
     color: var(--ms-text-secondary);
     font-size: var(--ms-text-small);
     font-weight: var(--ms-weight-medium);
     text-decoration: none;
+    white-space: nowrap;
     transition: color var(--ms-duration-micro) var(--ms-ease-creative);
   }
 
-  .ms-header__nav a:hover,
-  .ms-header__nav a:focus-visible {
+  .ms-header__link:hover,
+  .ms-header__link:focus-visible {
     color: var(--ms-text);
     text-decoration-line: underline;
     text-decoration-color: var(--ms-accent);
     text-underline-offset: 0.3em;
+  }
+
+  .ms-header__icon {
+    flex-shrink: 0;
+  }
+
+  /* Hidden from 480 px up, where the label is visible. Below it, the HeaderNav
+     component sets `hidden` until hover (300 ms) or keyboard focus. */
+  .ms-header__tooltip {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: var(--ms-z-tooltip);
+    max-width: 32ch;
+    padding: var(--ms-space-1) var(--ms-space-2);
+    border: 1px solid var(--ms-border-strong);
+    border-radius: var(--ms-radius-xs);
+    background: var(--ms-surface-raised);
+    box-shadow: var(--ms-shadow-md);
+    color: var(--ms-text);
+    font-size: var(--ms-text-fine);
+    font-weight: var(--ms-weight-medium);
+  }
+
+  @media not all and (min-width: 480px) {
+    .ms-header__nav {
+      gap: var(--ms-space-2);
+    }
+
+    .ms-header__link {
+      min-width: var(--ms-control-height);
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .ms-header__icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  @media (min-width: 480px) {
+    .ms-header__tooltip {
+      display: none;
+    }
   }
 
   .ms-footer {

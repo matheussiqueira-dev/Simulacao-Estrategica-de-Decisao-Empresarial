@@ -3,7 +3,8 @@ import { IBM_Plex_Sans } from "next/font/google";
 import Link from "next/link";
 
 import packageJson from "../../package.json";
-import { PORTFOLIO_CASE_URL, PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
+import { HeaderNav } from "./components/HeaderNav";
+import { PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
 import "./globals.css";
 
 // Downloaded at build time and served from this site: no runtime request to Google.
@@ -96,14 +97,9 @@ export default function RootLayout({
               <span className="ms-header__mark" aria-hidden="true">
                 SD
               </span>
-              <span className="max-[479px]:sr-only">{PRODUCT_NAME}</span>
+              <span className="max-[480px]:sr-only">{PRODUCT_NAME}</span>
             </Link>
-            <nav className="ms-header__nav" aria-label="Projeto">
-              <a href={PORTFOLIO_CASE_URL}>Portfólio</a>
-              <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-                Código<span className="ms-sr-only"> (abre em nova aba)</span>
-              </a>
-            </nav>
+            <HeaderNav />
           </div>
         </header>
         <main id="main-content" tabIndex={-1}>
