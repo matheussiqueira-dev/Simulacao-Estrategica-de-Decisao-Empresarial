@@ -19,7 +19,7 @@ Simulador web de decisões de negócio: ajuste preço, custos, equipe, juros, im
 - **Acessível:** labels visíveis, foco visível, gráfico com tabela alternativa e sem animação com `prefers-reduced-motion`. O axe roda em 320, 768 e 1280 px no CI.
 
 ## Stack
-- **Frontend (publicado):** Next.js 16 (App Router, página estática), React 19, TypeScript strict, Tailwind 3 com o design system `ms-tokens` v1.0, IBM Plex Sans, Recharts 3.
+- **Frontend (publicado):** Next.js 16 (App Router, página estática), React 19, TypeScript strict, Tailwind 3 com o design system `ms-tokens` v1.0, IBM Plex Sans, Recharts 3, ícones Lucide (`lucide-react` 1.55.0, versão fixa do padrão).
 - **Testes:** Vitest (motor, entradas, formatação e tokens), Playwright com `@axe-core/playwright` (fluxos, overflow e acessibilidade).
 - **Backend (referência, não publicado):** FastAPI e Pydantic v2 com o mesmo motor em Python, usado para os testes de paridade; pytest e ruff.
 
