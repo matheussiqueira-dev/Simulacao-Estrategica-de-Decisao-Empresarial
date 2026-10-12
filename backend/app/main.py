@@ -40,7 +40,7 @@ async def request_validation_handler(
     # which turned the 422 into a 500. Keep FastAPI's documented shape without the input.
     detail = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in exc.errors()]
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": detail}
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content={"detail": detail}
     )
 
 
