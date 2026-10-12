@@ -1,11 +1,15 @@
 // Generates the "SD" monogram used by the favicon and the share images (Appendix A.9).
 // Fonts do not load inside favicons, so the letters are converted to vector outlines
-// from IBM Plex Sans 700. Run after changing the monogram:
+// from IBM Plex Sans 700. The PNG and ICO files are rasterized from the same SVG with
+// next/og, the renderer that already draws the Apple icon at build time. Run after
+// changing the monogram:
 //
 //   node scripts/generate-brand-mark.mjs
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import * as fontkit from "fontkit";
+import og from "next/og.js";
+import { createElement } from "react";
 
 const MONOGRAM = "SD";
 const VIEWBOX = 32;
@@ -47,6 +51,33 @@ export const MONOGRAM_PATH =
   "${monogramPath}";
 `;
 
+async function renderPng(size) {
+  const source = `data:image/svg+xml;base64,${Buffer.from(iconSvg).toString("base64")}`;
+  const image = createElement("img", { src: source, width: size, height: size, alt: "" });
+  const response = new og.ImageResponse(image, { width: size, height: size });
+  return Buffer.from(await response.arrayBuffer());
+}
+
+/** One PNG-compressed entry, which browsers and Windows read in .ico files. */
+function icoFromPng(png, size) {
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(1, 2); // image type: icon
+  header.writeUInt16LE(1, 4); // one image
+  header.writeUInt8(size, 6);
+  header.writeUInt8(size, 7);
+  header.writeUInt16LE(1, 10); // colour planes
+  header.writeUInt16LE(32, 12); // bits per pixel
+  header.writeUInt32LE(png.length, 14);
+  header.writeUInt32LE(header.length, 18);
+  return Buffer.concat([header, png]);
+}
+
 writeFileSync(new URL("../src/app/icon.svg", import.meta.url), iconSvg);
 writeFileSync(new URL("../src/app/brand-mark.ts", import.meta.url), brandModule);
-console.log(`Wrote src/app/icon.svg and src/app/brand-mark.ts (${monogramPath.length} chars of path data)`);
+writeFileSync(new URL("../src/app/favicon.ico", import.meta.url), icoFromPng(await renderPng(32), 32));
+mkdirSync(new URL("../public/", import.meta.url), { recursive: true });
+writeFileSync(new URL("../public/icon-512.png", import.meta.url), await renderPng(512));
+console.log(
+  `Wrote src/app/icon.svg, src/app/brand-mark.ts, src/app/favicon.ico and public/icon-512.png ` +
+    `(${monogramPath.length} chars of path data)`,
+);
