@@ -100,6 +100,61 @@ test("a shared link restores its scenario and clamps invalid values", async ({ p
   await expect(page.getByRole("textbox", { name: "Demanda mensal", exact: true })).toHaveValue("4000");
 });
 
+test("below 480px the project links are 44px icon buttons with a dismissible tooltip", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/");
+  const project = page.getByRole("navigation", { name: "Projeto" });
+  const portfolio = project.getByRole("link", { name: "Portfólio", exact: true });
+  const code = project.getByRole("link", { name: "Código (abre em nova aba)", exact: true });
+
+  for (const link of [portfolio, code]) {
+    const box = await link.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  }
+  // The label stays in the accessibility tree but is clipped to 1px (ms-sr-only).
+  const labelWidth = await portfolio.evaluate(
+    (link) => link.querySelector("span")?.getBoundingClientRect().width ?? 0,
+  );
+  expect(labelWidth).toBeLessThanOrEqual(1);
+
+  const tooltip = portfolio.locator(".ms-header__tooltip");
+  await page.getByRole("link", { name: /Business Decision Simulator/ }).focus();
+  await page.keyboard.press("Tab");
+  await expect(portfolio).toBeFocused();
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toHaveText("Portfólio");
+
+  await page.keyboard.press("Escape");
+  await expect(tooltip).toBeHidden();
+  await expect(portfolio).toBeFocused();
+});
+
+test("from 480px the project links show their labels and no tooltip", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 800 });
+  await page.goto("/");
+  const portfolio = page
+    .getByRole("navigation", { name: "Projeto" })
+    .getByRole("link", { name: "Portfólio", exact: true });
+
+  await expect(portfolio).toContainText("Portfólio");
+  await portfolio.hover();
+  await page.waitForTimeout(400);
+  await expect(portfolio.locator(".ms-header__tooltip")).toBeHidden();
+});
+
+test("serves the favicon.ico and the 512px icon", async ({ request }) => {
+  const favicon = await request.get("/favicon.ico");
+  expect(favicon.status()).toBe(200);
+  expect(favicon.headers()["content-type"]).toContain("image/x-icon");
+
+  const icon = await request.get("/icon-512.png");
+  expect(icon.status()).toBe(200);
+  expect(icon.headers()["content-type"]).toBe("image/png");
+});
+
 for (const width of [320, 375, 768, 1024, 1440]) {
   test(`has no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
