@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { MODEL_ASSUMPTIONS, breakevenUnits, runSimulation } from "./engine";
+import { MODEL_ASSUMPTIONS, breakevenUnits, priceFactor, runSimulation } from "./engine";
 import { type SimulationInput, defaultSimulationInput } from "./limits";
 
 type GoldenCase = {
@@ -101,7 +101,48 @@ describe("breakevenUnits", () => {
 
   it("agrees with the safety margin reported by the engine", () => {
     const result = runSimulation(defaultSimulationInput);
-    const margin = (defaultSimulationInput.demand - result.breakeven_units) / defaultSimulationInput.demand;
+    const margin = (result.effective_demand - result.breakeven_units) / result.effective_demand;
     expect(margin).toBeCloseTo(result.safety_margin, 3);
+  });
+});
+
+describe("one model for KPIs and projection", () => {
+  it.each([
+    defaultSimulationInput,
+    { ...defaultSimulationInput, price: 220, price_sensitivity: 0.5 },
+    { ...defaultSimulationInput, demand: 4000, employees: 40 },
+  ])("reports the first projected month as the monthly profit", (input) => {
+    const result = runSimulation(input);
+    expect(Math.abs(result.monthly_profit - result.profit_series[0])).toBeLessThanOrEqual(
+      MONEY_TOLERANCE,
+    );
+  });
+
+  it("projects revenue in monthly units after the price effect", () => {
+    const input = { ...defaultSimulationInput, price: 150, demand: 2000, price_sensitivity: 0.3 };
+    const result = runSimulation(input);
+    expect(result.effective_demand).toBeCloseTo(input.demand * priceFactor(input), 6);
+    expect(result.revenue_series[0]).toBeCloseTo(input.price * result.effective_demand, 2);
+  });
+
+  it.each([1, 6, 12, 24])("sums twelve months into the annual profit with a %i-month horizon", (period) => {
+    const twelve = runSimulation({ ...defaultSimulationInput, period_months: 12 });
+    const result = runSimulation({ ...defaultSimulationInput, period_months: period });
+    const sum = twelve.profit_series.reduce((total, value) => total + value, 0);
+    expect(Math.abs(result.annual_profit - sum)).toBeLessThanOrEqual(0.05);
+    expect(result.profit_series).toHaveLength(period);
+  });
+
+  it("stops a shrinking market at zero revenue", () => {
+    const result = runSimulation({ ...defaultSimulationInput, churn_rate: 0.25, period_months: 24 });
+    expect(Math.min(...result.revenue_series)).toBe(0);
+  });
+
+  it("keeps the price factor inside its bounds", () => {
+    expect(priceFactor({ ...defaultSimulationInput, price: 220, price_sensitivity: 0.5 })).toBe(
+      MODEL_ASSUMPTIONS.minPriceFactor,
+    );
+    expect(priceFactor({ ...defaultSimulationInput, price: 60, price_sensitivity: 0.5 })).toBe(1.2);
+    expect(priceFactor({ ...defaultSimulationInput, price_sensitivity: 0 })).toBe(1);
   });
 });
