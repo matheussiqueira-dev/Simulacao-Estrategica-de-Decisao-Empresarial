@@ -148,7 +148,8 @@ test("from 480px the project links show their labels and no tooltip", async ({ p
 test("serves the favicon.ico and the 512px icon", async ({ request }) => {
   const favicon = await request.get("/favicon.ico");
   expect(favicon.status()).toBe(200);
-  expect(favicon.headers()["content-type"]).toContain("image/x-icon");
+  // `next start` answers image/x-icon; Vercel answers the registered image/vnd.microsoft.icon.
+  expect(favicon.headers()["content-type"]).toMatch(/^image\/(x-icon|vnd\.microsoft\.icon)/);
 
   const icon = await request.get("/icon-512.png");
   expect(icon.status()).toBe(200);
