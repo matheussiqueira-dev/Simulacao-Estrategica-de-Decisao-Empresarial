@@ -29,6 +29,9 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); 
 - NumPy, Pandas e dependências de banco e autenticação do backend.
 - GIF de demonstração da interface antiga, substituído por uma captura atual.
 
+### Security
+- API de referência atualizada para FastAPI 0.143.0 e Starlette 1.7.0, que corrigem os advisories do Starlette 0.41.3 apontados pelo `pip-audit` no CI; uvicorn e pydantic acompanharam, e o cliente de testes passou a ser o `httpx2`.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added
