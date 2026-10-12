@@ -28,9 +28,7 @@ app.add_middleware(
     allow_headers=["content-type"],
 )
 
-app.include_router(
-    scenarios.router, prefix=f"{settings.api_prefix}/scenarios", tags=["scenarios"]
-)
+app.include_router(scenarios.router, prefix=f"{settings.api_prefix}/scenarios", tags=["scenarios"])
 app.include_router(health.router, prefix=settings.api_prefix, tags=["health"])
 
 
@@ -40,9 +38,7 @@ async def request_validation_handler(
 ) -> JSONResponse:
     # The default handler echoes the rejected input: NaN/Infinity cannot be serialized,
     # which turned the 422 into a 500. Keep FastAPI's documented shape without the input.
-    detail = [
-        {"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in exc.errors()
-    ]
+    detail = [{"loc": err["loc"], "msg": err["msg"], "type": err["type"]} for err in exc.errors()]
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": detail}
     )

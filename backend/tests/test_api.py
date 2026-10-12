@@ -38,9 +38,7 @@ def test_run_returns_result_for_valid_input(client: TestClient) -> None:
     ],
 )
 def test_run_rejects_invalid_input_with_422(client: TestClient, body: str) -> None:
-    response = client.post(
-        RUN_URL, content=body, headers={"content-type": "application/json"}
-    )
+    response = client.post(RUN_URL, content=body, headers={"content-type": "application/json"})
     assert response.status_code == 422
     assert response.json()["detail"]
 
