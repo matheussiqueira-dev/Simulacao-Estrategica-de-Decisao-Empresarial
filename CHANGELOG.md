@@ -2,6 +2,15 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões em [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] - 2026-10-12
+
+### Added
+- `favicon.ico` (32 px) e `icon-512.png`, gerados pelo mesmo script do monograma a partir do `icon.svg`.
+- Abaixo de 480 px, "Portfólio" e "Código" no header viram botões de ícone de 44 × 44 com tooltip: abre no hover depois de 300 ms e no foco do teclado, e o Esc fecha.
+
+### Changed
+- Links do header com ícones Lucide (`lucide-react` 1.55.0). "Código" usa `CodeXml`, porque o Lucide 1.x não tem o ícone do GitHub.
+
 ## [0.2.0] - 2026-10-12
 
 ### Added
