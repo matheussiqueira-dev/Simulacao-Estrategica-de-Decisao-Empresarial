@@ -18,7 +18,7 @@ async function run() {
   await page.waitForTimeout(1500);
 
   const outPng = path.join(scriptDir, "..", "..", "docs", "demo.png");
-  await page.screenshot({ path: outPng, fullPage: true });
+  await page.screenshot({ path: outPng });
   await browser.close();
 
   console.log(`Screenshot salva em ${outPng}`);

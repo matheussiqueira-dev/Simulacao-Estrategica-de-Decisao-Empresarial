@@ -1,126 +1,109 @@
 # Business Decision Simulator
 
-Plataforma web interativa para testar decisões estratégicas (preço, custos, marketing, equipe, juros, impostos) e visualizar instantaneamente impacto em lucro, caixa, crescimento e risco.
+Simulador web de decisões de negócio: ajuste preço, custos, equipe, juros, impostos e demanda e veja lucro, caixa, risco e a projeção mensal recalculados no navegador.
 
 [![Demo ao vivo](https://img.shields.io/badge/Demo-ao_vivo-00f2fe?style=for-the-badge&logo=vercel&logoColor=000000)](https://simulacao-estrategica-decisao.vercel.app)
 [![Case no portfólio](https://img.shields.io/badge/Case-Portf%C3%B3lio-000000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://www.matheussiqueira.dev/pt-BR/projects/business-decision-simulator)
 [![Código](https://img.shields.io/badge/C%C3%B3digo-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/matheussiqueira-dev/Simulacao-Estrategica-de-Decisao-Empresarial)
 
-![Demonstração](docs/demo.gif)
+![Simulador com premissas à esquerda e resultado à direita](docs/demo.png)
 
 ---
 
-## Destaques
-- Atualização em tempo real: sliders e inputs disparam `POST /api/scenarios/run` com debounce de 160 ms; só a requisição mais recente atualiza a tela. Se a API não responder, há fallback local para manter a responsividade.
-- Entradas tolerantes a erro: campo vazio ou inválido mostra mensagem inline e mantém o último valor válido; valores fora da faixa são limitados aos extremos. Nada disso trava a simulação.
-- KPIs e gráficos dinâmicos: lucro, fluxo de caixa, margem de segurança, risco e projeção de receita/lucro nos próximos meses.
-- UX inspirada em cockpit financeiro (glassmorphism + gradientes) com layout 2 colunas: controles à esquerda, KPIs/gráficos à direita.
-- Engine vetorizada (NumPy/Pandas) para simulações rápidas e fácil extensão de fórmulas.
+## O que faz
+- **Simula a decisão no navegador:** cada ajuste de preço, custo, equipe, marketing, demanda, churn, juros ou impostos recalcula na hora o lucro, o fluxo de caixa, a margem de segurança, o risco e a projeção mensal. Não há chamada de rede.
+- **Um modelo só:** KPIs e projeção usam a mesma demanda efetiva (demanda × efeito do preço). O lucro mensal é o primeiro mês projetado e o lucro anual é a soma dos próximos 12 meses.
+- **Entradas tolerantes a erro:** campo vazio ou texto inválido mostram erro inline e mantêm o último resultado; valores fora da faixa são limitados aos extremos; aceita vírgula decimal.
+- **Cenário compartilhável:** os valores alterados vão para o endereço da página (`?price=150&demand=2000`); abrir o link restaura o cenário, e valores inválidos são descartados ou limitados.
+- **Premissas à vista:** salário por pessoa, dívida, capital de giro, depreciação, efeito do preço e sazonalidade aparecem na página.
+- **Acessível:** labels visíveis, foco visível, gráfico com tabela alternativa e sem animação com `prefers-reduced-motion`. O axe roda em 320, 768 e 1280 px no CI.
 
 ## Stack
-- **Frontend**: Next.js 16, React 19, Tailwind 3, Recharts, Playwright (screenshot demo).
-- **Backend**: FastAPI, Pydantic v2, SQLAlchemy (models), JWT stub (só local).
-- **Engine**: NumPy + Pandas (cálculo de lucro, caixa, risco, crescimento).
-- **DB**: PostgreSQL (models prontos; persistência futura).
+- **Frontend (publicado):** Next.js 16 (App Router, página estática), React 19, TypeScript strict, Tailwind 3 com o design system `ms-tokens` v1.0, IBM Plex Sans, Recharts 3.
+- **Testes:** Vitest (motor, entradas, formatação e tokens), Playwright com `@axe-core/playwright` (fluxos, overflow e acessibilidade).
+- **Backend (referência, não publicado):** FastAPI e Pydantic v2 com o mesmo motor em Python, usado para os testes de paridade; pytest e ruff.
 
-## Arquitetura (visão rápida)
-- `frontend/` — UI, componentes (sliders, KPIs, chart), estado via `useSimulationState` (fetch + debounce).
-- `backend/app/main.py` — FastAPI; todas as rotas públicas ficam sob `/api`.
-- `vercel.json` — deploy como um projeto Vercel com dois [Services](https://vercel.com/docs/services): `backend` e `frontend`.
-- `backend/app/simulation/engine.py` — motor de cálculo vetorizado.
-- `backend/app/api/routes/` — auth demo (JWT), cenários mock e health.
+## Arquitetura
+- `frontend/src/lib/simulation/` — motor (`engine.ts`), limites das entradas, parser pt-BR, formatação BRL e cenário na URL. É a fonte das fórmulas que a página usa.
+- `frontend/src/app/` — página, layout com o shell padrão, componentes, ícone, imagens de compartilhamento, `robots.txt` e `sitemap.xml`.
+- `backend/app/simulation/engine.py` — implementação de referência do mesmo motor.
+- `fixtures/simulation-golden.json` — 13 cenários que os dois motores precisam reproduzir (gerados por `backend/scripts/generate_golden.py`).
+- `docs/adr/` — decisões de arquitetura, modelo, CSP e persistência.
+
+## O modelo
+| Métrica | Como é calculada |
+|---|---|
+| Demanda efetiva | demanda mensal × fator de preço (entre 0,6 e 1,3; cai acima de R$ 100 conforme a sensibilidade) |
+| Lucro mensal | primeiro mês projetado: (preço − custo variável) × demanda efetiva − custos fixos − folha − marketing − juros − impostos |
+| Lucro anual | soma dos próximos 12 meses projetados |
+| Fluxo de caixa mensal | lucro mensal + depreciação − capital de giro diluído no horizonte |
+| Ponto de equilíbrio | (custos fixos + folha + marketing + juros) ÷ margem de contribuição |
+| Margem de segurança | (demanda efetiva − ponto de equilíbrio) ÷ demanda efetiva |
+| Índice de risco | 1 − margem de segurança, limitado entre 0 e 1 |
+| Projeção | demanda efetiva × tendência (crescimento mensal do modelo, nunca abaixo de zero) × sazonalidade de ±8% |
+
+É um modelo simplificado para demonstração e não substitui uma análise financeira.
 
 ## Como rodar localmente
-### Backend
+Requisitos: Node 24 (`frontend/.nvmrc`). O backend é opcional e usa Python 3.12 (`backend/.python-version`).
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+API de referência (opcional):
 ```bash
 cd backend
 python -m venv .venv
 . .venv/Scripts/activate   # Windows
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+## Testes
 ```bash
 cd frontend
-npm install
-cp .env.example .env.local   # NEXT_PUBLIC_API_URL=http://localhost:8000
-npm run dev -- --port 3000
+npm run lint
+npm run typecheck
+npm test            # Vitest com cobertura
+npm run build
+npm run test:e2e    # Playwright + axe contra o build; localmente usa o Edge instalado
 ```
 
-Por padrão o frontend chama a API na mesma origem (`/api/...`), como no Vercel. Com os dois servidores separados, defina `NEXT_PUBLIC_API_URL=http://localhost:8000` em `frontend/.env.local`; o backend libera CORS para as origens de `ALLOWED_ORIGINS` (array JSON; padrão `http://localhost:3000` e `http://127.0.0.1:3000`).
+```bash
+cd backend
+ruff check .
+python -m pytest
+```
 
-Com a [Vercel CLI](https://vercel.com/docs/cli), `vercel dev` sobe os dois serviços numa origem só, como em produção.
-
-## Endpoints úteis
-- `GET /api/health` — liveness.
-- `POST /api/auth/login` — emite JWT de demonstração (sem persistência). Só existe fora do Vercel.
-- `GET /api/scenarios/` — cenários mock.
-- `POST /api/scenarios/run` — executa a simulação (JSON de variáveis). Entrada vazia, fora da faixa, `NaN`/`Infinity` ou JSON inválido responde 422, sem ecoar o valor enviado.
+Ao mudar uma fórmula, altere `engine.ts` e `engine.py` juntos e regenere as fixtures com `python scripts/generate_golden.py` (na pasta `backend`). O CI roda tudo isso em cada PR e em cada push na `main`.
 
 ## Deploy na Vercel
-Um único projeto com [Vercel Services](https://vercel.com/docs/services) (Beta), configurado em `vercel.json`:
+- Projeto `simulacao-estrategica-decisao`, conectado ao GitHub: cada push gera um preview e a `main` vai para produção.
+- **Root Directory:** `frontend`. **Preset:** Next.js. **Node:** 24.x.
+- **Env vars:** nenhuma. A página é estática e calcula no navegador; a API não é publicada (`docs/adr/0001-deploy-frontend-only.md`).
+- **Headers:** CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` e `X-Frame-Options` em `frontend/next.config.ts`, sem `X-Powered-By`.
 
-| Serviço | Pasta | Framework | Rota pública |
+| Variável | Onde | Obrigatória | Uso |
 |---|---|---|---|
-| `backend` | `backend/` | FastAPI (`app.main:app`, Python 3.12) | `/api/*` |
-| `frontend` | `frontend/` | Next.js | todo o resto |
-
-- No projeto Vercel, o **Root Directory** é a raiz do repositório (onde está o `vercel.json`).
-- O frontend fala com o backend pela mesma origem; não há bindings entre serviços, porque nenhuma chamada sai do servidor Next.
-- O backend recebe o caminho original (`/api/...`), por isso as rotas do FastAPI já têm o prefixo `/api`.
-
-| Variável | Serviço | Obrigatória | Uso |
-|---|---|---|---|
-| `NEXT_PUBLIC_API_URL` | frontend | não | Base da API. Vazia no Vercel (mesma origem). |
-| `ALLOWED_ORIGINS` | backend | não | Origens liberadas no CORS, em array JSON. Só importa fora da mesma origem. |
-| `JWT_SECRET` | backend | não | Só usada pelo login demo, que não é registrado no Vercel. |
-
-O Vercel define `VERCEL=1`; o backend usa essa variável para não registrar o login demo em deploys públicos.
+| `ALLOWED_ORIGINS` | backend local | não | Origens liberadas no CORS da API de referência, em array JSON. |
+| `APP_NAME` | backend local | não | Título da documentação da API. |
 
 ## Dependências e auditoria
-`npm audit` não tem achados críticos. Os altos restantes vêm de `braces@3.0.3` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)), usado por `micromatch` no Tailwind 3 e no plugin ESLint do Next. Não existe versão corrigida do `braces`; o código roda só no build e no lint, com globs do próprio projeto, e não vai para o navegador nem para a Function. A saída definitiva é migrar para o Tailwind 4.
+`npm audit` não tem achados críticos. Os altos restantes vêm de `braces@3.0.3` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)), usado por `micromatch` no Tailwind 3 e no plugin ESLint do Next. Não existe versão corrigida do `braces`; o código roda só no build e no lint, com globs do próprio projeto, e não vai para o navegador. A saída definitiva é migrar para o Tailwind 4.
 
-## Variáveis simuladas (payload)
-```json
-{
-  "price": 120,
-  "variable_cost": 45,
-  "fixed_cost": 25000,
-  "employees": 12,
-  "interest_rate": 0.08,
-  "tax_rate": 0.27,
-  "demand": 1200,
-  "marketing_spend": 12000,
-  "churn_rate": 0.04,
-  "price_sensitivity": 0.18,
-  "period_months": 12
-}
-```
+## Limitações
+- Premissas fixas (salário, dívida, capital de giro, depreciação e sazonalidade) e um modelo de crescimento linear.
+- Sem contas nem cenários salvos no servidor: o cenário vive só no endereço da página.
+- A projeção não é previsão; serve para comparar decisões dentro do modelo.
 
-## Scripts úteis
-- Frontend: `npm run dev`, `npm run lint`.
-- Backend: `uvicorn app.main:app --reload`; testes com `pip install -r requirements-dev.txt` e `python -m pytest`.
+## Screenshot
+`docs/demo.png` é uma captura real da página em 1440 × 900. Para recriar com o build rodando: `cd frontend && DEMO_URL=http://localhost:3000 node scripts/screenshot.mjs` (Playwright no Edge instalado; troque com `PLAYWRIGHT_CHANNEL`).
 
-## Próximos passos sugeridos
-- Persistir usuários/cenários (PostgreSQL + Alembic).
-- Rate limit em `POST /api/scenarios/run` (regra WAF do Vercel).
-- Testes automatizados: PyTest (engine), React Testing Library / Playwright (UI).
-- Migração para ambiente de produção (build Next + gunicorn/uvicorn workers).
-
-## Sobre o GIF
-O arquivo `docs/demo.gif` foi gerado a partir da UI atual. Para recriar:
-1) Inicie frontend e backend (`npm run dev` + `uvicorn ...`).  
-2) Gere o PNG: `cd frontend && node scripts/screenshot.mjs` (Playwright headless no Edge instalado; troque com `PLAYWRIGHT_CHANNEL`).  
-3) Converta para GIF:  
-```bash
-python - <<'PY'
-from PIL import Image
-img = Image.open('docs/demo.png')
-img.save('docs/demo.gif', save_all=True, append_images=[img], duration=1200, loop=0)
-PY
-```  
-4) Faça o commit: `git add docs/demo.gif`.
+## Licença
+MIT. Veja [LICENSE](LICENSE).
 
 ---
 
