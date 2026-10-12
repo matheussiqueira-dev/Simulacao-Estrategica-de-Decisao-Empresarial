@@ -1,31 +1,44 @@
-import type { Metadata } from "next";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Sans } from "next/font/google";
+import Link from "next/link";
+
 import packageJson from "../../package.json";
-import { PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
+import { PORTFOLIO_CASE_URL, PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
 import "./globals.css";
 
-const sans = Manrope({
-  variable: "--font-sans",
+// Downloaded at build time and served from this site: no runtime request to Google.
+const plex = IBM_Plex_Sans({
+  weight: "variable",
   subsets: ["latin"],
+  variable: "--font-ibm-plex-sans",
   display: "swap",
+  preload: true,
 });
 
-const display = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  display: "swap",
-});
-
+const title = `${PRODUCT_NAME} | ${author.name}`;
 const description =
-  "Painel interativo para testar variáveis de negócio e visualizar impacto financeiro em tempo real.";
+  "Simulador de decisões de negócio: ajuste preço, custos, equipe, juros e demanda e veja lucro, caixa, risco e a projeção mensal. Feito com Next.js e TypeScript.";
+
+export const viewport: Viewport = { colorScheme: "dark", themeColor: "#0b0d10" };
 
 export const metadata: Metadata = {
-  title: `${PRODUCT_NAME} | ${author.name}`,
+  metadataBase: new URL(SITE_URL),
+  title,
   description,
+  applicationName: PRODUCT_NAME,
   authors: [{ name: author.name, url: author.url }],
   creator: author.name,
-  alternates: { canonical: SITE_URL },
-  openGraph: { url: SITE_URL },
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: author.name,
+    locale: "pt_BR",
+    url: "/",
+    title,
+    description,
+  },
+  twitter: { card: "summary_large_image", title, description },
 };
 
 const jsonLd = {
@@ -35,6 +48,7 @@ const jsonLd = {
   description,
   url: SITE_URL,
   applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
   inLanguage: "pt-BR",
   author: {
     "@type": "Person",
@@ -60,17 +74,41 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body
-        className={`${sans.variable} ${display.variable} bg-slate-950 text-slate-100 antialiased font-sans`}
-      >
+    <html
+      lang="pt-BR"
+      data-theme="dark"
+      className={plex.variable}
+      style={{ backgroundColor: "#0b0d10", colorScheme: "dark" }}
+    >
+      <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
-        {children}
+        <a className="ms-skip-link" href="#main-content">
+          Pular para o conteúdo
+        </a>
+        <header className="ms-header">
+          <div className="ms-container ms-header__inner">
+            <Link href="/" className="ms-header__brand">
+              <span className="ms-header__mark" aria-hidden="true">
+                SD
+              </span>
+              <span className="max-[479px]:sr-only">{PRODUCT_NAME}</span>
+            </Link>
+            <nav className="ms-header__nav" aria-label="Projeto">
+              <a href={PORTFOLIO_CASE_URL}>Portfólio</a>
+              <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+                Código<span className="ms-sr-only"> (abre em nova aba)</span>
+              </a>
+            </nav>
+          </div>
+        </header>
+        <main id="main-content" tabIndex={-1}>
+          {children}
+        </main>
         <footer className="ms-footer">
           <div className="ms-container ms-footer__inner">
             <p className="ms-footer__signature">

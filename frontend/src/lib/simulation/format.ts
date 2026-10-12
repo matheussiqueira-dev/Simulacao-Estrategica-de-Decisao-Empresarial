@@ -6,6 +6,13 @@ const currency = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 0,
 });
 
+const currencyCents = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 const compactCurrency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
@@ -25,6 +32,8 @@ const monthShort = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-d
 const monthLong = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
 
 export const formatCurrency = (value: number) => currency.format(value);
+/** Unit prices: keeps up to two decimals ("R$ 150,5"). */
+export const formatCurrencyCents = (value: number) => currencyCents.format(value);
 export const formatCompactCurrency = (value: number) => compactCurrency.format(value);
 /** 0.084 → "8,4%" */
 export const formatPercent = (value: number) => percent.format(value);

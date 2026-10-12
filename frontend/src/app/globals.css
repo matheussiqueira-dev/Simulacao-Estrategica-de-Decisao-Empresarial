@@ -1,61 +1,168 @@
+@import "./ms-tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  html {
+    scroll-padding-top: var(--ms-header-height);
+  }
+
+  ::placeholder {
+    color: var(--ms-text-tertiary);
+  }
+
+  input[type="range"] {
+    accent-color: var(--ms-accent);
+  }
 }
 
-body {
-  min-height: 100vh;
-  background-color: #0b1220;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent 40%),
-    radial-gradient(circle at 20% 20%, rgba(74, 222, 128, 0.08), transparent 25%),
-    radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.08), transparent 25%),
-    radial-gradient(circle at 30% 80%, rgba(251, 191, 36, 0.12), transparent 28%);
-  color: #e2e8f0;
-}
-
-.glass-panel {
-  background: linear-gradient(145deg, rgba(24, 36, 58, 0.9), rgba(13, 19, 32, 0.75));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(14px);
-}
-
-.panel-accent {
-  border: 1px solid rgba(110, 243, 142, 0.35);
-  box-shadow: 0 12px 50px rgba(110, 243, 142, 0.18);
-}
-
-/* Shared author footer. Interim styling from the existing Tailwind theme until ms-tokens.css lands. */
+/* Shared shell (Appendix A.9). Values come only from ms-tokens.css. */
 @layer components {
   .ms-container {
-    @apply mx-auto w-full max-w-7xl px-6;
+    width: 100%;
+    max-width: var(--ms-layout-max);
+    margin-inline: auto;
+    padding-inline: var(--ms-layout-padding);
+  }
+
+  .ms-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--ms-z-header);
+    height: var(--ms-header-height);
+    border-bottom: 1px solid var(--ms-border);
+    background: color-mix(in srgb, var(--ms-bg) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .ms-header {
+      background: var(--ms-bg-subtle);
+    }
+  }
+
+  .ms-header__inner {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+  }
+
+  .ms-header__brand {
+    display: inline-flex;
+    min-height: var(--ms-control-height);
+    align-items: center;
+    gap: var(--ms-space-3);
+    border-radius: var(--ms-radius-xs);
+    color: var(--ms-text);
+    font-size: var(--ms-text-small);
+    font-weight: var(--ms-weight-semibold);
+    text-decoration: none;
+  }
+
+  .ms-header__mark {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ms-border-strong);
+    border-radius: var(--ms-radius-xs);
+    background: var(--ms-surface);
+    font-size: var(--ms-text-micro);
+    font-weight: var(--ms-weight-bold);
+  }
+
+  .ms-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-1);
+  }
+
+  .ms-header__nav a {
+    display: inline-flex;
+    min-height: var(--ms-control-height);
+    align-items: center;
+    padding-inline: var(--ms-space-3);
+    border-radius: var(--ms-radius-control);
+    color: var(--ms-text-secondary);
+    font-size: var(--ms-text-small);
+    font-weight: var(--ms-weight-medium);
+    text-decoration: none;
+    transition: color var(--ms-duration-micro) var(--ms-ease-creative);
+  }
+
+  .ms-header__nav a:hover,
+  .ms-header__nav a:focus-visible {
+    color: var(--ms-text);
+    text-decoration-line: underline;
+    text-decoration-color: var(--ms-accent);
+    text-underline-offset: 0.3em;
   }
 
   .ms-footer {
-    @apply border-t border-white/10 py-6 text-sm text-slate-400;
+    margin-top: var(--ms-space-16);
+    border-top: 1px solid var(--ms-border);
+    background: color-mix(in srgb, var(--ms-surface) 45%, transparent);
+    padding-block: clamp(var(--ms-space-10), 5vw, var(--ms-space-12));
   }
 
   .ms-footer__inner {
-    @apply flex flex-col gap-2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-3);
   }
 
-  .ms-footer__signature,
+  .ms-footer__signature {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ms-space-2);
+    margin: 0;
+    color: var(--ms-text-secondary);
+    font-size: var(--ms-text-caption);
+  }
+
+  .ms-footer__signature a {
+    color: var(--ms-text-secondary);
+    text-decoration: none;
+  }
+
+  .ms-footer__signature a:first-child {
+    color: var(--ms-text);
+    font-weight: var(--ms-weight-semibold);
+  }
+
   .ms-footer__links {
-    @apply flex flex-wrap items-center gap-x-4;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--ms-space-6);
   }
 
-  .ms-footer a {
-    @apply inline-flex min-h-11 items-center rounded-sm text-slate-300 underline-offset-4 hover:text-white hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400;
+  .ms-footer__links a {
+    display: inline-flex;
+    min-height: var(--ms-control-height);
+    align-items: center;
+    color: var(--ms-text-secondary);
+    font-size: var(--ms-text-small);
+    font-weight: var(--ms-weight-medium);
+    text-decoration: none;
+  }
+
+  .ms-footer a:hover,
+  .ms-footer a:focus-visible {
+    color: var(--ms-text);
+    text-decoration-line: underline;
+    text-decoration-color: var(--ms-accent);
+    text-underline-offset: 0.2em;
   }
 
   .ms-footer__meta {
-    @apply text-xs;
-  }
-
-  .ms-sr-only {
-    @apply sr-only;
+    margin: 0;
+    color: var(--ms-text-tertiary);
+    font-size: var(--ms-text-fine);
   }
 }

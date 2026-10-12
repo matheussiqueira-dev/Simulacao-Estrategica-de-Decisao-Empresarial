@@ -1,15 +1,15 @@
 type KpiCardProps = {
-  title: string;
+  label: string;
   value: string;
-  note?: string;
+  context: string;
 };
 
-export function KpiCard({ title, value, note }: KpiCardProps) {
+export function KpiCard({ label, value, context }: KpiCardProps) {
   return (
-    <div className="glass-panel rounded-3xl p-4 shadow-glass">
-      <p className="text-sm text-slate-300">{title}</p>
-      <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
-      {note ? <p className="mt-2 text-sm text-slate-400">{note}</p> : null}
+    <div className="rounded-card border border-line bg-surface p-5 lg:p-6">
+      <p className="text-caption font-semibold text-fg-secondary">{label}</p>
+      <p className="ms-num mt-2 whitespace-nowrap text-kpi text-fg">{value}</p>
+      <p className="mt-2 text-fine text-fg-tertiary">{context}</p>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatCompactCurrency,
   formatCurrency,
+  formatCurrencyCents,
   formatEditable,
   formatInteger,
   formatMonthLong,
@@ -86,6 +87,15 @@ describe("pt-BR formatting", () => {
     expect(formatPercent(0.0184)).toBe("1,8%");
     expect(formatEditable(1234.5, 2)).toBe("1234,5");
     expect(normalizeSpaces(formatCompactCurrency(12500))).toMatch(/^R\$ 12,5 mil$/);
+  });
+
+  it.each([
+    [150.5, "R$ 150,5"],
+    [120, "R$ 120"],
+    [45.678, "R$ 45,68"],
+    [0, "R$ 0"],
+  ])("formats the unit price %d as %j", (value, expected) => {
+    expect(normalizeSpaces(formatCurrencyCents(value))).toBe(expected);
   });
 
   it("labels months in Portuguese", () => {
