@@ -19,7 +19,7 @@ cd backend && pip install -r requirements-dev.txt && ruff check . && python -m p
 
 - `npm run test:e2e` usa o build (`npm run build` antes) e sobe `next start` na porta 3100.
 - Regenerar as fixtures depois de mudar uma fórmula: `cd backend && python scripts/generate_golden.py`.
-- Regenerar o monograma do ícone: `cd frontend && node scripts/generate-brand-mark.mjs`.
+- Regenerar o monograma e os ícones (`icon.svg`, `favicon.ico`, `public/icon-512.png`): `cd frontend && node scripts/generate-brand-mark.mjs`.
 
 ## Regras do projeto
 - Uma fórmula muda nos dois motores juntos (`engine.ts` e `engine.py`), com as fixtures regeneradas. O CI quebra se um lado ficar para trás.
@@ -30,5 +30,6 @@ cd backend && pip install -r requirements-dev.txt && ruff check . && python -m p
 ## Exceções ao padrão
 - Playwright roda no Edge instalado (`channel: "msedge"`) fora do CI, com um worker só; o CI usa Chromium.
 - CSP no modelo sem nonces (`docs/adr/0003-content-security-policy.md`).
+- "Código" no header usa o ícone `CodeXml`: o `lucide-react` 1.x não tem ícones de marca, então não há o do GitHub. É a mesma escolha do app de gestos.
 - `npm audit` no CI falha só em `critical`: os achados `high` vêm de `braces@3.0.3` no Tailwind 3 e no ESLint, sem versão corrigida (README, "Dependências e auditoria").
 - Vercel: Root Directory `frontend`, preset Next.js, Node 24.x, sem variáveis de ambiente.
