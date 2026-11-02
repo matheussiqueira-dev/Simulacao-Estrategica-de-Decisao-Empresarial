@@ -33,7 +33,7 @@
 | Testes e2e | `npm run test:e2e` | CI: PASS, 21/21 (run de `97cce6b`). Local: 20/21 com Chromium 1243, `next build --webpack` e fontes simuladas; a falha foi o caso de erros de console, na primeira tentativa por bloqueio da CSP à fonte simulada e, na segunda, com causa não confirmada | 2026-11-02 |
 | Build | `npm run build` | PASS só com `next build --webpack` + `NEXT_FONT_GOOGLE_MOCKED_RESPONSES` (Google Fonts bloqueado). Build real fica a cargo do CI | 2026-11-02 |
 | Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 19 moderate (vitest 4.1.11 + `@vitest/mocker` + coverage; `minimatch` < 11.0.1 e cadeia do eslint; todos exigem major) · Python: 0 | 2026-11-02 |
-| CI no GitHub | API do GitHub (Actions) | run de `724487f` verde; resultado deste ciclo na seção 10. Atualizações de segurança do Dependabot para `@vitest/mocker` falharam em 2026-10-28 (exigem major) | 2026-11-02 |
+| CI no GitHub | API do GitHub (Actions) | run de `724487f` verde; run de `9b77568` (2026-11-02) verde em todos os jobs. Atualizações de segurança do Dependabot para `@vitest/mocker` falharam em 2026-10-28 (exigem major) | 2026-11-02 |
 
 Observações:
 - 2026-11-02: `postcss-selector-parser` saiu da lista do `npm audit`; o `npm audit` agora aponta `minimatch` (GHSA-g3hv-75wg-m249) em toda a cadeia do eslint, o que levou o total de moderate de 6 para 19 sem mudança no projeto.
