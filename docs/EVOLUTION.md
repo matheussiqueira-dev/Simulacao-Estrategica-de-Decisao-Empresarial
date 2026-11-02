@@ -1,6 +1,6 @@
 # Plano de Evolução — Simulacao-Estrategica-de-Decisao-Empresarial
 
-> Documento vivo, revisado semanalmente. Última revisão: 2026-10-26.
+> Documento vivo, revisado semanalmente. Última revisão: 2026-11-02.
 > Regra central: nenhuma mudança entra sem estar ligada a um objetivo desta página e sem manter ou melhorar as métricas da seção 2.
 
 ## 1. Identidade do projeto
@@ -9,13 +9,13 @@
 - **Tipo:** web app estático (Next.js, página única) + API FastAPI de referência não publicada, usada para paridade do motor.
 - **Stack:**
   - frontend: Next.js 16.4.3 (App Router), React 19.2.3, TypeScript ^5 (5.9.3 instalado, strict), Tailwind CSS 3.4.19, Recharts ^3.7.0, `lucide-react` 1.55.0, clsx; testes com Vitest 4.1.11 + coverage-v8, Playwright 1.64.0 + `@axe-core/playwright` 4.13.0; ESLint 9 com `eslint-config-next` 16.4.3; `@types/node` ^24; Node 24.x (`engines`, `.nvmrc`);
-  - backend: Python 3.12 (`.python-version`), FastAPI 0.143.0, uvicorn 0.54.0, Pydantic 2.14.1, pydantic-settings 2.15.0; dev: pytest 9.1.1, httpx2 2.13.1, ruff 0.17.0.
+  - backend: Python 3.12 (`.python-version`), FastAPI 0.143.0, uvicorn 0.54.0, Pydantic 2.14.1, pydantic-settings 2.15.0; dev: pytest 9.1.1, pytest-cov 7.1.0, httpx2 2.13.1, ruff 0.17.0.
 - **Gerenciador de pacotes:** npm (`frontend/package-lock.json`); pip com `requirements*.txt` fixados (sem lock de hashes).
 - **Deploy:** Vercel, projeto `simulacao-estrategica-decisao`, Root Directory `frontend`, preset Next.js, Node 24.x, sem env vars; produção em https://simulacao-estrategica-decisao.vercel.app. Backend sem deploy (ADR 0001).
 - **Estrutura:**
   - `frontend/src/lib/simulation/` — motor (`engine.ts`), limites, parser pt-BR, formatação BRL, cenário na URL;
   - `frontend/src/app/` — layout com shell padrão, página, componentes, ícones, OG, `robots`/`sitemap`;
-  - `frontend/e2e/` — Playwright + axe (13 casos em `simulator.spec.ts`);
+  - `frontend/e2e/` — Playwright + axe (14 casos em `simulator.spec.ts`);
   - `backend/app/` — API de referência (`simulation/engine.py`, `schemas.py`, rotas `health` e `scenarios`);
   - `fixtures/simulation-golden.json` — 13 cenários de paridade TS × Python;
   - `docs/adr/` — ADRs 0001–0004 (deploy, modelo único de demanda, CSP, cenário na URL).
@@ -25,17 +25,18 @@
 
 | Verificação | Comando | Resultado | Data |
 | --- | --- | --- | --- |
-| Instalação | `npm ci` · `python -m venv .venv && pip install -r requirements-dev.txt` | PASS / PASS (aviso `EBADENGINE`: ambiente em Node 22.23.4, projeto exige 24.x; Python 3.13 local, CI em 3.12) | 2026-10-26 |
-| Lint | `npm run lint` · `ruff check .` · `ruff format --check .` | PASS · PASS · PASS (15 arquivos) | 2026-10-26 |
-| Typecheck | `npm run typecheck` | PASS | 2026-10-26 |
-| Testes | `npm test` · `python -m pytest -p no:cacheprovider` | 65 passando / 0 falhando · 44 passando / 0 falhando | 2026-10-26 |
-| Cobertura | `npm test` (v8, escopo `src/lib`) · `pytest --cov=app` (medição avulsa, `pytest-cov` fora do requirements) | linhas 100% · statements 100% · branches 96% (`parse.ts` 91,66%) · funções 100% · backend: linhas 99% (140 statements, 1 sem cobertura) | 2026-10-26 |
-| Testes e2e | `npm run test:e2e` | PASS, 20/20 (Chromium 1243 do sistema via config temporária; build local com `next build --webpack` e fontes simuladas) | 2026-10-26 |
-| Build | `npm run build` | PASS só com `next build --webpack` + `NEXT_FONT_GOOGLE_MOCKED_RESPONSES` (Google Fonts bloqueado; o Turbopack não aceita arquivo de fonte local no mock). Build real fica a cargo do CI | 2026-10-26 |
-| Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 6 moderate (vitest 4.1.11 + `@vitest/mocker`, `postcss-selector-parser` via Tailwind 3; todos exigem major) · Python: 0 | 2026-10-26 |
-| CI no GitHub | API do GitHub (Actions) | run 13 (`a8d9298`, 2026-10-24) **falhou** (audit critical do `next`, como previsto); resultado após este ciclo na seção 10 | 2026-10-26 |
+| Instalação | `npm ci` · `python3.12 -m venv .venv && pip install -r requirements-dev.txt` | PASS / PASS (aviso `EBADENGINE`: ambiente em Node 22.23.4, projeto exige 24.x) | 2026-11-02 |
+| Lint | `npm run lint` · `ruff check .` · `ruff format --check .` | PASS · PASS · PASS (15 arquivos) | 2026-11-02 |
+| Typecheck | `npm run typecheck` | PASS | 2026-11-02 |
+| Testes | `npm test` · `python -m pytest -p no:cacheprovider` | 68 passando / 0 falhando · 44 passando / 0 falhando | 2026-11-02 |
+| Cobertura | `npm test` (v8, escopo `src/lib`) · `pytest --cov=app --cov-fail-under=90` (gate no CI) | linhas 100% · statements 100% · branches 96% · funções 100% · backend: linhas 99% | 2026-11-02 |
+| Testes e2e | `npm run test:e2e` | PASS, 21/21 (Chromium 1243 do sistema via config temporária; build local com `next build --webpack` e fontes simuladas) | 2026-11-02 |
+| Build | `npm run build` | PASS só com `next build --webpack` + `NEXT_FONT_GOOGLE_MOCKED_RESPONSES` (Google Fonts bloqueado). Build real fica a cargo do CI | 2026-11-02 |
+| Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 19 moderate (vitest 4.1.11 + `@vitest/mocker` + coverage; `minimatch` < 11.0.1 e cadeia do eslint; todos exigem major) · Python: 0 | 2026-11-02 |
+| CI no GitHub | API do GitHub (Actions) | run de `724487f` verde; resultado deste ciclo na seção 10. Atualizações de segurança do Dependabot para `@vitest/mocker` falharam em 2026-10-28 (exigem major) | 2026-11-02 |
 
 Observações:
+- 2026-11-02: `postcss-selector-parser` saiu da lista do `npm audit`; o `npm audit` agora aponta `minimatch` (GHSA-g3hv-75wg-m249) em toda a cadeia do eslint, o que levou o total de moderate de 6 para 19 sem mudança no projeto.
 - 2026-10-26: critical do `next` corrigido em `3c8019f` (16.4.3). Histórico: o critical do `next` era posterior ao último CI verde; como o job usa `npm audit --audit-level=critical`, o próximo push ou PR falha. O `package.json` fixa `next` e `eslint-config-next` em `16.4.0` exato, então a correção exige editar o pin para `16.4.3` (patch, sem major).
 - README ("Dependências e auditoria") e o guia do repositório atribuem os `high` a `braces@3.0.3`; o `npm audit` atual não lista mais o `braces` e passou a apontar `zod`. A documentação está desatualizada.
 - Pendências v4 confirmadas no código: defaults com prejuízo (`frontend/src/lib/simulation/limits.ts:18-27`: preço 120, custo variável 45, demanda 1.200, churn 0,04), `@types/node` `^20` com runtime 24, Tailwind 3. Os itens do Bloco B (WebSocket, JWT demo, métricas fabricadas, tokens, headers, CI) já estão resolvidos e não entram como pendentes.
@@ -57,8 +58,8 @@ Observações:
 | # | Eixo | Objetivo | Métrica | Baseline | Meta | Prioridade | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | O1 | Funcionamento | CI e produção verdes com Next corrigido | `npm audit --omit=dev` critical; execuções verdes na `main` | 1 critical; CI previsto vermelho no próximo run | 0 critical; 4 semanas de CI verde | P0 | ativo (0 critical em 2026-10-26; falta CI verde por 4 semanas) |
-| O2 | Cobertura de testes | Medir e manter cobertura do backend e da camada de UI | cobertura de linhas `backend/app` · branches `src/lib` | não medido · 96% | ≥ 90% · 100% | P2 | ativo |
-| O3 | Segurança | Zerar high/critical da árvore completa e reduzir moderates | `npm audit` (critical/high/moderate) | 1 / 1 / 6 | 0 / 0 / ≤ 2 (só Tailwind 3, se a migração não for aprovada) | P1 | ativo (agora 0 / 0 / 6; os 6 dependem de B4/B5) |
+| O2 | Cobertura de testes | Medir e manter cobertura do backend e da camada de UI | cobertura de linhas `backend/app` · branches `src/lib` | não medido · 96% | ≥ 90% · 100% | P2 | ativo (backend 99% com gate no CI; falta branch em `parse.ts`) |
+| O3 | Segurança | Zerar high/critical da árvore completa e reduzir moderates | `npm audit` (critical/high/moderate) | 1 / 1 / 6 | 0 / 0 / ≤ 2 (só Tailwind 3, se a migração não for aprovada) | P1 | ativo (agora 0 / 0 / 19; dependem de B4 e de `minimatch` 11 no eslint, seção 9) |
 | O4 | Performance | Lighthouse mobile em produção registrado | Perf / A11y / BP / SEO | não medido neste ciclo | ≥ 90 / ≥ 95 / ≥ 95 / ≥ 95 | P2 | ativo |
 | O5 | Qualidade/Manutenibilidade | Reduzir drift de dependências | pacotes com versão nova sem major (`npm outdated`) | 11 | ≤ 3 | P2 | ativo |
 | O6 | Dados/UX | Primeira visita com cenário plausível | lucro mensal e risco no cenário default | −R$ 1.640/mês, risco 100/100 (pendências v4) | lucro > 0 em ≥ 10 de 12 meses, risco ≤ 50/100 | P1 | ativo |
@@ -84,19 +85,23 @@ Observações:
 - [ ] **B4 (P1, O3)** Migrar Vitest e `@vitest/coverage-v8` para 5.x (major, com aprovação) para fechar GHSA-qxg6-89mg-rqv8 — 65 testes passando e cobertura mantida.
 - [ ] **B5 (P1, O3)** Migrar para Tailwind 4 mantendo o mapeamento A.3 sobre `ms-tokens.css` (pendência v4 P2, com aprovação) — 0 achados de `postcss-selector-parser`; e2e, axe e Lighthouse sem regressão; capturas 375 px e 1440 px no PR.
 - [x] **B6 (P2, O5)** (2026-10-26, `6c7e2e5`; 24.19.2) `@types/node` para `^24` (pendência v4 P4) — `npm run typecheck` e `npm run build` verdes.
-- [ ] **B7 (P2, O3)** Atualizar a seção "Dependências e auditoria" do README e as exceções do guia do repositório com os achados reais (sem `braces`, com `zod`/vitest) — texto igual à saída de `npm audit` do dia.
-- [ ] **B8 (P2, O2)** Adicionar `pytest-cov` ao `requirements-dev.txt` e gate de cobertura no job `backend` — `pytest --cov=app --cov-fail-under=90` verde.
+- [x] **B7 (P2, O3)** (2026-11-02, `f91135c`) Atualizar a seção "Dependências e auditoria" do README e as exceções do guia do repositório com os achados reais (sem `braces`, com `zod`/vitest) — texto igual à saída de `npm audit` do dia.
+- [x] **B8 (P2, O2)** (2026-11-02, `fd12135`) Adicionar `pytest-cov` ao `requirements-dev.txt` e gate de cobertura no job `backend` — `pytest --cov=app --cov-fail-under=90` verde.
 - [ ] **B9 (P2, O1)** Self-host da IBM Plex Sans via `next/font/local` (já existe `@fontsource/ibm-plex-sans` nas devDependencies) — `npm run build` passa sem acesso a `fonts.googleapis.com`; mesma `font-family` computada.
 - [ ] **B10 (P2, O4)** Lighthouse mobile da produção registrado na seção 10 — Perf ≥ 90, A11y ≥ 95, BP ≥ 95, SEO ≥ 95.
 - [ ] **B11 (P2, O5)** Dependabot para `npm` (frontend), `pip` (backend) e `github-actions`, agrupado e semanal; actions fixadas por SHA — PRs abertos com CI completo.
-- [ ] **B13 (P2, O3)** Subir o gate do CI para `npm audit --audit-level=high` e atualizar o comentário do workflow e as exceções do guia (o `braces` não aparece mais e o `zod` foi corrigido) — CI verde com o gate novo. Junto com B7.
+- [x] **B13 (P2, O3)** (2026-11-02, `f91135c`) Subir o gate do CI para `npm audit --audit-level=high` e atualizar o comentário do workflow e as exceções do guia (o `braces` não aparece mais e o `zod` foi corrigido) — CI verde com o gate novo. Junto com B7.
 - [ ] **B14 (P2, O1)** Documentar no README como reproduzir o build sem acesso ao Google Fonts (ou resolver com B9) — passo verificável em ambiente sem `fonts.googleapis.com`.
+- [ ] **B15 (P2, O5)** Atualizar patches/minors dentro dos ranges (`recharts` 3.10.1, `postcss`, `autoprefixer`, `@types/react`, Playwright 1.64.1, `lucide-react`) e o backend (`pydantic`, `pydantic-settings`, `pytest`, `ruff`) — `npm outdated` só com majors pendentes; suíte completa verde.
+- [ ] **B16 (P1, O1)** Aplicar o patch da linha 16.4.x do release de segurança do Next.js de 2026-11-03 (7 achados médios) — `next` e `eslint-config-next` no patch publicado; suíte completa verde.
 - [ ] **B12 (P3, O6)** Comparar dois cenários lado a lado (ver F1) — diferença de lucro/risco calculada pelo mesmo motor; teste unitário e e2e; URL compartilhável com os dois cenários.
 
 ## 7. Radar técnico
 
 | Data | Item | Fonte | Veredito (adotar / avaliar / descartar) | Motivo |
 | --- | --- | --- | --- | --- |
+| 2026-11-02 | Release de segurança do Next.js anunciado para 2026-11-03 (7 achados médios) | https://nextjs.org/blog/upcoming-nextjs-security-release-november-2026 | adotar (B16) | Ainda não publicado nesta revisão; aplicar no próximo ciclo. |
+| 2026-11-02 | GHSA-g3hv-75wg-m249 (`minimatch` < 11.0.1, só dev) | https://github.com/advisories/GHSA-g3hv-75wg-m249 | avaliar | Sem correção compatível com ESLint 9/10; decisão na seção 9. |
 | 2026-10-26 | Atualização de segurança do Next.js de 14/10/2026 (linha 16.4.x corrigida em 16.4.3, adotada) | https://nextjs.org/blog/nextjs-security-update-october-14-2026 | adotado (`3c8019f`) | Fecha o critical do runtime; acompanhar novos patches 16.4.x. |
 | 2026-10-26 | ESLint 9.x em fim de vida desde 2026-08-06 (projeto em `eslint` ^9) | https://eslint.org/blog/2026/03/eslint-v10.1.0-released/ | avaliar (major, decisão do dono) | Sem patches de segurança na linha 9; depende de `eslint-config-next` suportar ESLint 10. |
 | 2026-10-26 | FastAPI (notas de versão) | https://fastapi.tiangolo.com/release-notes/ | monitorar | `pip-audit` sem achados; sem mudança necessária. |
@@ -113,14 +118,15 @@ Observações:
 | --- | --- | --- | --- | --- |
 | F1 | Comparação A/B de cenários | Mostra impacto de uma decisão contra a base; demonstra estado derivado e URL com dois cenários | baixo | proposta |
 | F2 | Análise de sensibilidade (tornado) por variável | Mostra quais alavancas mais movem o lucro; demonstra raciocínio financeiro | médio (novo cálculo nos dois motores + fixtures) | proposta |
-| F3 | Exportar projeção em CSV | Reuso dos números em planilha; demonstra formatação pt-BR consistente | baixo | proposta |
+| F3 | Exportar projeção em CSV | Reuso dos números em planilha; demonstra formatação pt-BR consistente | baixo | implementada (2026-11-02, `ae6fe6d`) |
 | F4 | Premissas fixas como entradas avançadas (salário, dívida, capital de giro) | Transparência do modelo; responde à pergunta do Bloco B sobre premissas | médio (amplia limites e paridade) | proposta |
 | F5 | Simulação de Monte Carlo da demanda com semente fixa | Risco como distribuição, não ponto; demonstra estatística | alto (custo de CPU no cliente, novo modelo) | proposta |
 
 ## 9. Decisões pendentes do dono
 
 - Aprovar os novos defaults do simulador (ex.: `price=135`, `variable_cost=40`, `demand=2600`, `churn_rate=0.02`, usados nas capturas do portfólio)?
-- Aprovar a migração para Tailwind 4 (major) e para Vitest 5 (major)? São a única saída para os 6 moderates restantes.
+- Aprovar Vitest 5 (major)? Fecha os moderates do Vitest. Tailwind 4 (major) deixou de ser exigido pelo audit; continua como evolução opcional.
+- `minimatch` 11 por `overrides` (major em transitivo do eslint) ou aguardar o eslint adotar a linha 11?
 - Aprovar ESLint 10 (major; a linha 9 está em fim de vida desde 2026-08-06)?
 - Manter a API Python apenas como referência local ou publicá-la (Vercel Services ou segundo projeto)?
 - Locale: só pt-BR/BRL ou pt-BR + EN?
@@ -132,3 +138,4 @@ Observações:
 | --- | --- | --- | --- | --- |
 | 2026-10-23 | Documento inicial e baseline | — | ver seção 2 | B1 (O1), B3 (O3) |
 | 2026-10-26 | CI da `main` vermelho (critical do `next`) | `3c8019f` fix (next 16.4.3), `1029b08` fix (zod), `6c7e2e5` chore (`@types/node` ^24); docs | audit 1 critical / 1 high / 6 moderate → 0 / 0 / 6; e2e não verificado → 20/20; build não verificado → PASS com webpack e fontes simuladas; backend 99% de linhas (medição); outdated 11 → 16 | B13 + B7, B9, B8; B2/B4/B5 aguardam o dono. Nenhuma feature neste ciclo (F1 continua proposta) |
+| 2026-11-02 | CI verde; 13 moderate novos por `minimatch` (sem correção sem major); release do Next previsto para 2026-11-03 | `fd12135` ci (gate de cobertura, B8), `f91135c` ci (audit high + notas, B7/B13), `ae6fe6d` feat (F3); docs | testes 65 → 68; e2e 20 → 21; backend 99% com gate; audit 0 / 0 / 6 → 0 / 0 / 19 (achado externo) | B16, B9, B15; B2/B4/B5 aguardam o dono |
