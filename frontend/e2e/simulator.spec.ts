@@ -1,4 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
+import { readFile } from "node:fs/promises";
+
 import { type Page, expect, test } from "@playwright/test";
 
 const kpiValue = (page: Page, label: string) =>
@@ -182,3 +184,17 @@ for (const width of [320, 768, 1280]) {
     expect(blocking).toEqual([]);
   });
 }
+
+test("downloads the projection as a pt-BR csv", async ({ page }) => {
+  await page.goto("/");
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Baixar projeção em CSV" }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toMatch(/^projecao-\d{4}-\d{2}\.csv$/);
+
+  const csv = await readFile(await download.path(), "utf8");
+  const lines = csv.replace("\uFEFF", "").trimEnd().split("\r\n");
+  expect(lines[0]).toBe("Mês;Receita (R$);Lucro (R$)");
+  expect(lines.length).toBeGreaterThan(1);
+  expect(lines[1]).toMatch(/^\d{4}-\d{2};-?\d+,\d{2};-?\d+,\d{2}$/);
+});

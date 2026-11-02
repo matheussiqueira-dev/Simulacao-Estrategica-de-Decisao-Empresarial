@@ -97,6 +97,9 @@ Ao mudar uma fórmula, altere `engine.ts` e `engine.py` juntos e regenere as fix
 - `vitest` 4.1.11, `@vitest/mocker` e `@vitest/coverage-v8` ([GHSA-qxg6-89mg-rqv8](https://github.com/advisories/GHSA-qxg6-89mg-rqv8)): corrigidos na linha 5 do Vitest.
 - `minimatch` 10 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), via ESLint: corrigido na linha 11, que o ESLint 9 e o 10 ainda não aceitam.
 
+## Exportação
+O botão "Baixar projeção em CSV" gera o arquivo no navegador, com `;` e vírgula decimal, pronto para o Excel em pt-BR.
+
 ## Limitações
 - Premissas fixas (salário, dívida, capital de giro, depreciação e sazonalidade) e um modelo de crescimento linear.
 - Sem contas nem cenários salvos no servidor: o cenário vive só no endereço da página.

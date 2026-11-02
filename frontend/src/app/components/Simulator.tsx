@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 
-import { MODEL_ASSUMPTIONS } from "@/lib/simulation/engine";
+import { MODEL_ASSUMPTIONS, type SimulationResult } from "@/lib/simulation/engine";
+import { projectionFileName, projectionToCsv } from "@/lib/simulation/export-csv";
 import {
   formatCurrency,
   formatCurrencyCents,
@@ -19,6 +20,17 @@ import { useSimulationState } from "../hooks/useSimulationState";
 import { KpiCard } from "./KpiCard";
 import type { ChartPoint } from "./SimulationChart";
 import { type FieldDisplay, VariableSlider } from "./VariableSlider";
+
+function downloadProjection(result: SimulationResult) {
+  // The BOM makes Excel read the file as UTF-8.
+  const blob = new Blob(["\uFEFF", projectionToCsv(result)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = projectionFileName(result);
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
 
 const SimulationChart = dynamic(() => import("./SimulationChart").then((m) => m.SimulationChart), {
   ssr: false,
@@ -322,6 +334,13 @@ export function Simulator() {
               </table>
             </div>
           </details>
+          <button
+            type="button"
+            onClick={() => downloadProjection(result)}
+            className="mt-2 inline-flex min-h-control items-center rounded-control text-small font-medium text-accent"
+          >
+            Baixar projeção em CSV
+          </button>
           <p className="mt-4 text-fine text-fg-tertiary">
             Projeção do modelo com tendência, efeito do preço e sazonalidade de ±
             {formatPercent(MODEL_ASSUMPTIONS.seasonalityAmplitude)}; não é previsão.
