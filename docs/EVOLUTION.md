@@ -30,7 +30,7 @@
 | Typecheck | `npm run typecheck` | PASS | 2026-11-02 |
 | Testes | `npm test` · `python -m pytest -p no:cacheprovider` | 68 passando / 0 falhando · 44 passando / 0 falhando | 2026-11-02 |
 | Cobertura | `npm test` (v8, escopo `src/lib`) · `pytest --cov=app --cov-fail-under=90` (gate no CI) | linhas 100% · statements 100% · branches 96% · funções 100% · backend: linhas 99% | 2026-11-02 |
-| Testes e2e | `npm run test:e2e` | PASS, 21/21 (Chromium 1243 do sistema via config temporária; build local com `next build --webpack` e fontes simuladas) | 2026-11-02 |
+| Testes e2e | `npm run test:e2e` | CI: PASS, 21/21 (run de `97cce6b`). Local: 20/21 com Chromium 1243, `next build --webpack` e fontes simuladas; a falha foi o caso de erros de console, na primeira tentativa por bloqueio da CSP à fonte simulada e, na segunda, com causa não confirmada | 2026-11-02 |
 | Build | `npm run build` | PASS só com `next build --webpack` + `NEXT_FONT_GOOGLE_MOCKED_RESPONSES` (Google Fonts bloqueado). Build real fica a cargo do CI | 2026-11-02 |
 | Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 19 moderate (vitest 4.1.11 + `@vitest/mocker` + coverage; `minimatch` < 11.0.1 e cadeia do eslint; todos exigem major) · Python: 0 | 2026-11-02 |
 | CI no GitHub | API do GitHub (Actions) | run de `724487f` verde; resultado deste ciclo na seção 10. Atualizações de segurança do Dependabot para `@vitest/mocker` falharam em 2026-10-28 (exigem major) | 2026-11-02 |
@@ -138,4 +138,4 @@ Observações:
 | --- | --- | --- | --- | --- |
 | 2026-10-23 | Documento inicial e baseline | — | ver seção 2 | B1 (O1), B3 (O3) |
 | 2026-10-26 | CI da `main` vermelho (critical do `next`) | `3c8019f` fix (next 16.4.3), `1029b08` fix (zod), `6c7e2e5` chore (`@types/node` ^24); docs | audit 1 critical / 1 high / 6 moderate → 0 / 0 / 6; e2e não verificado → 20/20; build não verificado → PASS com webpack e fontes simuladas; backend 99% de linhas (medição); outdated 11 → 16 | B13 + B7, B9, B8; B2/B4/B5 aguardam o dono. Nenhuma feature neste ciclo (F1 continua proposta) |
-| 2026-11-02 | CI verde; 13 moderate novos por `minimatch` (sem correção sem major); release do Next previsto para 2026-11-03 | `fd12135` ci (gate de cobertura, B8), `f91135c` ci (audit high + notas, B7/B13), `ae6fe6d` feat (F3); docs | testes 65 → 68; e2e 20 → 21; backend 99% com gate; audit 0 / 0 / 6 → 0 / 0 / 19 (achado externo) | B16, B9, B15; B2/B4/B5 aguardam o dono |
+| 2026-11-02 | CI verde; 13 moderate novos por `minimatch` (sem correção sem major); release do Next previsto para 2026-11-03 | `fd12135` ci (gate de cobertura, B8), `f91135c` ci (audit high + notas, B7/B13), `ae6fe6d` feat (F3); docs | testes 65 → 68; e2e 20 → 21 no CI (local 20/21, ver seção 2); backend 99% com gate; audit 0 / 0 / 6 → 0 / 0 / 19 (achado externo) | B16, B9, B15; B2/B4/B5 aguardam o dono |
