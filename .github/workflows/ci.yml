@@ -31,9 +31,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      # High findings come only from braces@3.0.3 (build and lint tooling, no fixed release);
-      # see "Dependências e auditoria" in the README.
-      - run: npm audit --audit-level=critical
+      # Moderate findings need major upgrades; see "Dependências e auditoria" in the README.
+      - run: npm audit --audit-level=high
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
 
@@ -53,5 +52,5 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
-      - run: python -m pytest -p no:cacheprovider
+      - run: python -m pytest -p no:cacheprovider --cov=app --cov-fail-under=90
       - run: pip install pip-audit==2.10.1 && pip-audit -r requirements.txt

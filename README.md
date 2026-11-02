@@ -92,7 +92,10 @@ Ao mudar uma fórmula, altere `engine.ts` e `engine.py` juntos e regenere as fix
 | `APP_NAME` | backend local | não | Título da documentação da API. |
 
 ## Dependências e auditoria
-`npm audit` não tem achados críticos. Os altos restantes vêm de `braces@3.0.3` ([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)), usado por `micromatch` no Tailwind 3 e no plugin ESLint do Next. Não existe versão corrigida do `braces`; o código roda só no build e no lint, com globs do próprio projeto, e não vai para o navegador. Os dois moderados vêm de `postcss-selector-parser@6.1.4` ([GHSA-rj75-hqrm-r3gf](https://github.com/advisories/GHSA-rj75-hqrm-r3gf)), corrigido só na linha 7, que o Tailwind 3 não aceita; ele também só processa o CSS do próprio projeto no build. A saída definitiva para os dois é migrar para o Tailwind 4.
+`npm audit` não tem achados críticos nem altos; o CI falha a partir de `high`. Restam 19 moderados, todos em ferramentas de build, lint e teste, que não vão para o navegador, e cada família exige uma major:
+
+- `vitest` 4.1.11, `@vitest/mocker` e `@vitest/coverage-v8` ([GHSA-qxg6-89mg-rqv8](https://github.com/advisories/GHSA-qxg6-89mg-rqv8)): corrigidos na linha 5 do Vitest.
+- `minimatch` 10 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), via ESLint: corrigido na linha 11, que o ESLint 9 e o 10 ainda não aceitam.
 
 ## Limitações
 - Premissas fixas (salário, dívida, capital de giro, depreciação e sazonalidade) e um modelo de crescimento linear.

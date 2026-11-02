@@ -31,5 +31,5 @@ cd backend && pip install -r requirements-dev.txt && ruff check . && python -m p
 - Playwright roda no Edge instalado (`channel: "msedge"`) fora do CI, com um worker só; o CI usa Chromium.
 - CSP no modelo sem nonces (`docs/adr/0003-content-security-policy.md`).
 - "Código" no header usa o ícone `CodeXml`: o `lucide-react` 1.x não tem ícones de marca, então não há o do GitHub. É a mesma escolha do app de gestos.
-- `npm audit` no CI falha só em `critical`: os achados `high` vêm de `braces@3.0.3` no Tailwind 3 e no ESLint, sem versão corrigida (README, "Dependências e auditoria").
+- `npm audit` no CI falha a partir de `high`; os moderados restantes exigem major (README, "Dependências e auditoria").
 - Vercel: Root Directory `frontend`, preset Next.js, Node 24.x, sem variáveis de ambiente.
