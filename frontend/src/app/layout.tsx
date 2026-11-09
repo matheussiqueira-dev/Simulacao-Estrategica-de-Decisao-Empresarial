@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
 
 import packageJson from "../../package.json";
@@ -7,10 +7,32 @@ import { HeaderNav } from "./components/HeaderNav";
 import { PRODUCT_NAME, REPO_URL, SITE_URL, author } from "./site";
 import "./globals.css";
 
-// Downloaded at build time and served from this site: no runtime request to Google.
-const plex = IBM_Plex_Sans({
-  weight: "variable",
-  subsets: ["latin"],
+// Self-hosted from the pinned @fontsource package: the build never fetches from Google and
+// the site serves the files itself. Only the weights used by the tokens are shipped. Paths must
+// be string literals: next/font resolves them at compile time.
+const plex = localFont({
+  src: [
+    {
+      path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-ibm-plex-sans",
   display: "swap",
   preload: true,
