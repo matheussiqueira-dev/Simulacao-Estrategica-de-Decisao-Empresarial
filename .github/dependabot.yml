@@ -1,0 +1,27 @@
+# Atualizações de versão mensais (auditoria FinOps de 06/11/2026): menos PRs automáticos e
+# menos builds de prévia. As atualizações de segurança do Dependabot seguem imediatas.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: 'monthly'
+    groups:
+      frontend:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: 'monthly'
+    groups:
+      backend:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: 'monthly'
+    groups:
+      actions:
+        patterns: ['*']
