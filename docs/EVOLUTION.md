@@ -1,6 +1,6 @@
 # Plano de Evolução — Simulacao-Estrategica-de-Decisao-Empresarial
 
-> Documento vivo, revisado semanalmente. Última revisão: 2026-11-09.
+> Documento vivo, revisado semanalmente. Última revisão: 2026-11-16.
 > Regra central: nenhuma mudança entra sem estar ligada a um objetivo desta página e sem manter ou melhorar as métricas da seção 2.
 
 ## 1. Identidade do projeto
@@ -8,8 +8,8 @@
 - **Propósito:** "Business Decision Simulator": simulador web em que quem avalia o portfólio ajusta preço, custos, equipe, juros, impostos e demanda e vê lucro, caixa, risco e projeção de 12 meses recalculados no navegador.
 - **Tipo:** web app estático (Next.js, página única) + API FastAPI de referência não publicada, usada para paridade do motor.
 - **Stack:**
-  - frontend: Next.js 16.4.5 (App Router), React 19.2.3, TypeScript ^5 (5.9.3 instalado, strict), Tailwind CSS 3.4.19, Recharts ^3.7.0, `lucide-react` 1.70.0, clsx; testes com Vitest 4.1.11 + coverage-v8, Playwright 1.65.0 + `@axe-core/playwright` 4.14.0; ESLint 9 com `eslint-config-next` 16.4.5; fonte IBM Plex Sans self-hosted via `next/font/local` a partir de `@fontsource/ibm-plex-sans` 5.3.0; `@types/node` ^24; Node 24.x (`engines`, `.nvmrc`);
-  - backend: Python 3.12 (`.python-version`), FastAPI 0.143.0, uvicorn 0.54.0, Pydantic 2.14.3, pydantic-settings 2.16.2; dev: pytest 9.2.0, pytest-cov 7.1.0, httpx2 2.13.1, ruff 0.17.4.
+  - frontend: Next.js 16.4.5 (App Router), React 19.3.1, TypeScript ^5 (5.9.3 instalado, strict), Tailwind CSS 3.4.19, Recharts ^3.7.0, `lucide-react` 1.70.0, clsx; testes com Vitest 4.1.11 + coverage-v8, Playwright 1.65.0 + `@axe-core/playwright` 4.14.0; ESLint 9 com `eslint-config-next` 16.4.5; fonte IBM Plex Sans self-hosted via `next/font/local` a partir de `@fontsource/ibm-plex-sans` 5.3.0; `@types/node` ^24; Node 24.x (`engines`, `.nvmrc`);
+  - backend: Python 3.12 (`.python-version`), FastAPI 0.163.1, uvicorn 0.54.0, Pydantic 2.14.3, pydantic-settings 2.16.3; dev: pytest 9.2.0, pytest-cov 7.1.0, httpx2 2.13.1, ruff 0.17.4.
 - **Gerenciador de pacotes:** npm (`frontend/package-lock.json`); pip com `requirements*.txt` fixados (sem lock de hashes).
 - **Deploy:** Vercel, projeto `simulacao-estrategica-decisao`, Root Directory `frontend`, preset Next.js, Node 24.x, sem env vars; produção em https://simulacao-estrategica-decisao.vercel.app. CI do GitHub só sob demanda (`workflow_dispatch`) desde 2026-11-06, por decisão FinOps do dono. Backend sem deploy (ADR 0001).
 - **Estrutura:**
@@ -25,17 +25,18 @@
 
 | Verificação | Comando | Resultado | Data |
 | --- | --- | --- | --- |
-| Instalação | `npm ci` · `python3.12 -m venv .venv && pip install -r requirements-dev.txt` | PASS / PASS (aviso `EBADENGINE`: ambiente em Node 22.23.4, projeto exige 24.x) | 2026-11-09 |
-| Lint | `npm run lint` · `ruff check .` · `ruff format --check .` | PASS · PASS · PASS (15 arquivos) | 2026-11-09 |
-| Typecheck | `npm run typecheck` | PASS | 2026-11-09 |
-| Testes | `npm test` · `python -m pytest -p no:cacheprovider` | 68 passando / 0 falhando · 44 passando / 0 falhando | 2026-11-09 |
-| Cobertura | `npm test` (v8, escopo `src/lib`) · `pytest --cov=app --cov-fail-under=90` (gate no CI) | linhas 100% · statements 100% · branches 96% · funções 100% · backend: 99,29% | 2026-11-09 |
-| Testes e2e | `npm run test:e2e` | Local: PASS, 21/21 (Google Chrome for Testing 153 do sistema via `channel: "chrome"` em config temporária fora do repositório, sobre `next build` padrão) | 2026-11-09 |
-| Build | `npm run build` | PASS com o `next build` padrão (Turbopack) e sem acesso ao Google Fonts, desde `1e6ce4f` (B9) | 2026-11-09 |
-| Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 11 moderate (vitest 4 + `minimatch` na cadeia do eslint; todos exigem major) · Python: 0 | 2026-11-09 |
-| CI no GitHub | API do GitHub (Actions) | último run verde: `9b77568` (2026-11-02); desde `50ef104` o workflow é só `workflow_dispatch`, então os pushes deste ciclo não disparam CI (nenhum run manual disparado, para respeitar a política de minutos) | 2026-11-09 |
+| Instalação | `npm ci` · `python3.12 -m venv .venv && pip install -r requirements-dev.txt` | PASS / PASS (aviso `EBADENGINE`: ambiente em Node 22.23.4, projeto exige 24.x) | 2026-11-16 |
+| Lint | `npm run lint` · `ruff check .` · `ruff format --check .` | PASS · PASS · PASS (15 arquivos) | 2026-11-16 |
+| Typecheck | `npm run typecheck` | PASS | 2026-11-16 |
+| Testes | `npm test` · `python -m pytest -p no:cacheprovider` | 68 passando / 0 falhando · 44 passando / 0 falhando | 2026-11-16 |
+| Cobertura | `npm test` (v8, escopo `src/lib`) · `pytest --cov=app --cov-fail-under=90` (gate no CI) | linhas 100% · statements 100% · branches 96% · funções 100% · backend: 99,29% | 2026-11-16 |
+| Testes e2e | `npm run test:e2e` | Local: PASS, 21/21 (Google Chrome do sistema via `channel: "chrome"` em config temporária, removida após o uso, sobre `next build` padrão) | 2026-11-16 |
+| Build | `npm run build` | PASS (`next build` padrão, Turbopack) | 2026-11-16 |
+| Vulnerabilidades (audit) | `npm audit` · `pip-audit -r requirements.txt` | 0 critical / 0 high / 11 moderate (vitest 4 + `minimatch` na cadeia do eslint 9; todos exigem major) · Python: 0 | 2026-11-16 |
+| CI no GitHub | API do GitHub (Actions) | workflow `CI` só sob demanda; nenhum run manual no ciclo. Último evento em `f092701`: update de segurança do Dependabot para `minimatch` falhou (exige major na cadeia do eslint 9) | 2026-11-16 |
 
 Observações:
+- 2026-11-16: o `eslint` 10.15.0 já usa `minimatch` 11, mas este projeto está no ESLint 9 (fim de vida); fechar os moderates de `minimatch` passa a depender só da decisão sobre o ESLint 10 (seção 9). `next` 16.4.6 (2026-11-09) e outros patches ficaram para B19.
 - 2026-11-09: o total de moderate caiu de 19 para 11 sem mudança no projeto (base de advisories). Com B9, o computed `font-family` passou de `'IBM Plex Sans'` para o nome gerado pelo `next/font/local` (`plex`, com `'plex Fallback'`); a face carregada continua IBM Plex Sans 400/500/600/700, servida pelo próprio site, e nenhuma requisição externa foi observada na página.
 - 2026-11-02: `postcss-selector-parser` saiu da lista do `npm audit`; o `npm audit` agora aponta `minimatch` (GHSA-g3hv-75wg-m249) em toda a cadeia do eslint, o que levou o total de moderate de 6 para 19 sem mudança no projeto.
 - 2026-10-26: critical do `next` corrigido em `3c8019f` (16.4.3). Histórico: o critical do `next` era posterior ao último CI verde; como o job usa `npm audit --audit-level=critical`, o próximo push ou PR falha. O `package.json` fixa `next` e `eslint-config-next` em `16.4.0` exato, então a correção exige editar o pin para `16.4.3` (patch, sem major).
@@ -62,7 +63,7 @@ Observações:
 | O2 | Cobertura de testes | Medir e manter cobertura do backend e da camada de UI | cobertura de linhas `backend/app` · branches `src/lib` | não medido · 96% | ≥ 90% · 100% | P2 | ativo (backend 99% com gate no CI; falta branch em `parse.ts`) |
 | O3 | Segurança | Zerar high/critical da árvore completa e reduzir moderates | `npm audit` (critical/high/moderate) | 1 / 1 / 6 | 0 / 0 / ≤ 2 (só Tailwind 3, se a migração não for aprovada) | P1 | ativo (agora 0 / 0 / 11; dependem de B4 e de `minimatch` 11 no eslint, seção 9) |
 | O4 | Performance | Lighthouse mobile em produção registrado | Perf / A11y / BP / SEO | não medido neste ciclo | ≥ 90 / ≥ 95 / ≥ 95 / ≥ 95 | P2 | ativo |
-| O5 | Qualidade/Manutenibilidade | Reduzir drift de dependências | pacotes com versão nova sem major (`npm outdated`) | 11 | ≤ 3 | P2 | ativo (8 pendentes: 7 majors + `react`/`react-dom` 19.3, fixados exatos) |
+| O5 | Qualidade/Manutenibilidade | Reduzir drift de dependências | pacotes com versão nova sem major (`npm outdated`) | 11 | ≤ 3 | P2 | ativo (2026-11-16: 14 em `npm outdated`, 7 majors; 6 patches/minors em B19) |
 | O6 | Dados/UX | Primeira visita com cenário plausível | lucro mensal e risco no cenário default | −R$ 1.640/mês, risco 100/100 (pendências v4) | lucro > 0 em ≥ 10 de 12 meses, risco ≤ 50/100 | P1 | ativo |
 
 ## 5. Guardrails
@@ -90,19 +91,24 @@ Observações:
 - [x] **B8 (P2, O2)** (2026-11-02, `fd12135`) Adicionar `pytest-cov` ao `requirements-dev.txt` e gate de cobertura no job `backend` — `pytest --cov=app --cov-fail-under=90` verde.
 - [x] **B9 (P2, O1)** (2026-11-09, `1e6ce4f`; pesos 400–700 do `@fontsource`; o nome do `font-family` computado passou a ser o gerado, ver seção 2) Self-host da IBM Plex Sans via `next/font/local` (já existe `@fontsource/ibm-plex-sans` nas devDependencies) — `npm run build` passa sem acesso a `fonts.googleapis.com`; mesma `font-family` computada.
 - [ ] **B10 (P2, O4)** Lighthouse mobile da produção registrado na seção 10 — Perf ≥ 90, A11y ≥ 95, BP ≥ 95, SEO ≥ 95.
-- [ ] **B11 (P2, O5)** Dependabot para `npm` (frontend), `pip` (backend) e `github-actions`, agrupado e semanal; actions fixadas por SHA — PRs abertos com CI completo.
+- [x] **B11 (P2, O5)** (2026-11-16, `3821097`; mensal, como no restante da conta após a auditoria FinOps) Dependabot para `npm` (frontend), `pip` (backend) e `github-actions`, agrupado e semanal; actions fixadas por SHA — PRs abertos com CI completo.
 - [x] **B13 (P2, O3)** (2026-11-02, `f91135c`) Subir o gate do CI para `npm audit --audit-level=high` e atualizar o comentário do workflow e as exceções do guia (o `braces` não aparece mais e o `zod` foi corrigido) — CI verde com o gate novo. Junto com B7.
 - [x] **B14 (P2, O1)** (2026-11-09, resolvido por B9: `next build` padrão passa sem `fonts.googleapis.com`) Documentar no README como reproduzir o build sem acesso ao Google Fonts (ou resolver com B9) — passo verificável em ambiente sem `fonts.googleapis.com`.
 - [x] **B15 (P2, O5)** (2026-11-09, `1b6c7a3` frontend, `a168a2c` backend; `react` 19.3 e FastAPI 0.162 ficaram de fora, ver B17/B18) Atualizar patches/minors dentro dos ranges (`recharts` 3.10.1, `postcss`, `autoprefixer`, `@types/react`, Playwright 1.64.1, `lucide-react`) e o backend (`pydantic`, `pydantic-settings`, `pytest`, `ruff`) — `npm outdated` só com majors pendentes; suíte completa verde.
 - [x] **B16 (P1, O1)** (2026-11-09, `36f0e17`; 16.4.5) Aplicar o patch da linha 16.4.x do release de segurança do Next.js de 2026-11-03 (7 achados médios) — `next` e `eslint-config-next` no patch publicado; suíte completa verde.
-- [ ] **B17 (P2, O5)** Atualizar `react`/`react-dom` 19.2.3 → 19.3.x (minor, pins exatos) — suíte completa e e2e verdes; nenhum aviso novo de hidratação no console.
-- [ ] **B18 (P2, O5)** Avaliar FastAPI 0.143 → 0.162 na API de referência (minors 0.x podem ter mudanças de comportamento) — 44 testes e paridade das fixtures verdes; notas de versão revisadas.
+- [x] **B17 (P2, O5)** (2026-11-16, `5311b87`; e2e 21/21 com o teste de console sem erros) Atualizar `react`/`react-dom` 19.2.3 → 19.3.x (minor, pins exatos) — suíte completa e e2e verdes; nenhum aviso novo de hidratação no console.
+- [x] **B18 (P2, O5)** (2026-11-16, `5ef5005`; 0.163.1 + `pydantic-settings` 2.16.3; Starlette 1.10.0 resolvida; 44 testes, paridade e `-W error::DeprecationWarning` verdes) Avaliar FastAPI 0.143 → 0.162 na API de referência (minors 0.x podem ter mudanças de comportamento) — 44 testes e paridade das fixtures verdes; notas de versão revisadas.
+- [ ] **B19 (P2, O5)** Patches/minors dentro dos ranges: `next`/`eslint-config-next` 16.4.6, `@playwright/test` 1.65.1, `lucide-react` 1.73.0, `postcss` 8.5.33 (frontend); `httpx2` 2.16.0, `ruff` 0.17.5 (backend) — `npm outdated` só com majors; suíte completa e e2e verdes.
 - [ ] **B12 (P3, O6)** Comparar dois cenários lado a lado (ver F1) — diferença de lucro/risco calculada pelo mesmo motor; teste unitário e e2e; URL compartilhável com os dois cenários.
 
 ## 7. Radar técnico
 
 | Data | Item | Fonte | Veredito (adotar / avaliar / descartar) | Motivo |
 | --- | --- | --- | --- | --- |
+| 2026-11-16 | React 19.3.1 | https://react.dev/blog | adotado (`5311b87`) | Minor da linha 19 publicado em 2026-10-14; sem erro de console no e2e. |
+| 2026-11-16 | FastAPI 0.163.1 (Starlette 1.10) | https://fastapi.tiangolo.com/release-notes/ | adotado (`5ef5005`) | 20 minors sem quebra para as rotas usadas; `pip-audit` limpo. |
+| 2026-11-16 | Next.js 16.4.6 (patch de 2026-11-09, fora do release de segurança) | https://nextjs.org/blog | adotar (B19) | Patch na mesma minor; entra no próximo ciclo pelo limite de 3 itens. |
+| 2026-11-16 | ESLint 10.15.0 com `minimatch` 11 | https://www.npmjs.com/package/eslint/v/10.15.0 | avaliar (major, seção 9) | Fecharia GHSA-g3hv-75wg-m249; exige ESLint 10. |
 | 2026-11-09 | Release de segurança do Next.js de 2026-11-03: linha 16.4.x corrigida em 16.4.5 | https://www.netlify.com/changelog/2026-11-03-nextjs-security-vulnerabilities/ | adotado (`36f0e17`) | Fecha os 7 achados do release; `next` e `eslint-config-next` fixados em 16.4.5. |
 | 2026-11-09 | `next/font/local` (fontes locais resolvidas em tempo de compilação) | https://nextjs.org/docs/app/api-reference/components/font | adotado (`1e6ce4f`) | Remove a dependência de rede do build (O1); exige caminhos literais. |
 | 2026-11-09 | FastAPI 0.162.x | https://fastapi.tiangolo.com/release-notes/ | avaliar (B18) | 19 minors à frente; `pip-audit` sem achados. |
@@ -132,9 +138,8 @@ Observações:
 
 - Aprovar os novos defaults do simulador (ex.: `price=135`, `variable_cost=40`, `demand=2600`, `churn_rate=0.02`, usados nas capturas do portfólio)?
 - Aprovar Vitest 5 (major)? Fecha os moderates do Vitest. Tailwind 4 (major) deixou de ser exigido pelo audit; continua como evolução opcional.
-- `minimatch` 11 por `overrides` (major em transitivo do eslint) ou aguardar o eslint adotar a linha 11?
 - Com o CI só sob demanda, redefinir a meta de O1 ("4 semanas de CI verde"), por exemplo um run manual verde antes de cada divulgação?
-- Aprovar ESLint 10 (major; a linha 9 está em fim de vida desde 2026-08-06)?
+- Aprovar ESLint 10 (major; a linha 9 está em fim de vida desde 2026-08-06)? Desde o 10.15.0 isso também fecha os moderates de `minimatch`.
 - Manter a API Python apenas como referência local ou publicá-la (Vercel Services ou segundo projeto)?
 - Locale: só pt-BR/BRL ou pt-BR + EN?
 - Domínio: manter `simulacao-estrategica-decisao.vercel.app` ou subdomínio de `matheussiqueira.dev`?
@@ -147,3 +152,4 @@ Observações:
 | 2026-10-26 | CI da `main` vermelho (critical do `next`) | `3c8019f` fix (next 16.4.3), `1029b08` fix (zod), `6c7e2e5` chore (`@types/node` ^24); docs | audit 1 critical / 1 high / 6 moderate → 0 / 0 / 6; e2e não verificado → 20/20; build não verificado → PASS com webpack e fontes simuladas; backend 99% de linhas (medição); outdated 11 → 16 | B13 + B7, B9, B8; B2/B4/B5 aguardam o dono. Nenhuma feature neste ciclo (F1 continua proposta) |
 | 2026-11-02 | CI verde; 13 moderate novos por `minimatch` (sem correção sem major); release do Next previsto para 2026-11-03 | `fd12135` ci (gate de cobertura, B8), `f91135c` ci (audit high + notas, B7/B13), `ae6fe6d` feat (F3); docs | testes 65 → 68; e2e 20 → 21 no CI (local 20/21, ver seção 2); backend 99% com gate; audit 0 / 0 / 6 → 0 / 0 / 19 (achado externo) | B16, B9, B15; B2/B4/B5 aguardam o dono |
 | 2026-11-09 | CI virou sob demanda (`50ef104`), sem run nos pushes; release de segurança do Next (16.4.5) publicado; moderates 19 → 11 por mudança externa | `36f0e17` fix (next 16.4.5, B16), `1e6ce4f` fix (fonte local, B9/B14), `1b6c7a3` chore (deps frontend), `a168a2c` chore (deps backend) (B15); docs | testes 68 + 44 mantidos; e2e local 20/21 → 21/21; build só com webpack e fontes simuladas → `next build` padrão PASS; outdated 16 → 8; audit 0 / 0 / 19 → 0 / 0 / 11 | B17, B18; B2/B4/B5 aguardam o dono. Nenhuma feature neste ciclo (F1 segue proposta) |
+| 2026-11-16 | Suíte verde; CI sob demanda, sem run; Dependabot de segurança para `minimatch` falhou (exige ESLint 10); nenhuma feature aprovada, F1 exige UI nova e segue proposta | `3821097` ci (SHA + Dependabot, B11), `5311b87` chore (react 19.3.1, B17), `5ef5005` chore (FastAPI 0.163.1, B18); docs | testes 68 + 44 mantidos; cobertura 96% branches / 99,29% backend mantida; e2e 21/21; audit 0 / 0 / 11 mantido; outdated 8 → 14 (novas versões externas) | B19; ESLint 10 e B2/B4/B5 aguardam o dono |
