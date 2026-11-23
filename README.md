@@ -92,10 +92,10 @@ Ao mudar uma fórmula, altere `engine.ts` e `engine.py` juntos e regenere as fix
 | `APP_NAME` | backend local | não | Título da documentação da API. |
 
 ## Dependências e auditoria
-`npm audit` não tem achados críticos nem altos; o CI falha a partir de `high`. Restam 19 moderados, todos em ferramentas de build, lint e teste, que não vão para o navegador, e cada família exige uma major:
+`npm audit` não tem achados (0 em todas as severidades); o CI falha a partir de `high`. Os moderados anteriores foram fechados sem major:
 
-- `vitest` 4.1.11, `@vitest/mocker` e `@vitest/coverage-v8` ([GHSA-qxg6-89mg-rqv8](https://github.com/advisories/GHSA-qxg6-89mg-rqv8)): corrigidos na linha 5 do Vitest.
-- `minimatch` 10 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), via ESLint: corrigido na linha 11, que o ESLint 9 e o 10 ainda não aceitam.
+- `vitest`, `@vitest/mocker` e `@vitest/coverage-v8` ([GHSA-qxg6-89mg-rqv8](https://github.com/advisories/GHSA-qxg6-89mg-rqv8), [GHSA-xp26-3454-mjgp](https://github.com/advisories/GHSA-xp26-3454-mjgp)): corrigidos no 4.1.12.
+- `minimatch` 10 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), via `typescript-eslint`: o 8.73 já usa `minimatch` 11.
 
 ## Exportação
 O botão "Baixar projeção em CSV" gera o arquivo no navegador, com `;` e vírgula decimal, pronto para o Excel em pt-BR.
