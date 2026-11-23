@@ -39,6 +39,11 @@ describe("parseDecimal", () => {
       expect(parseDecimal(raw)).toBeNull();
     },
   );
+
+  it("rejects digit strings that overflow to a non-finite number", () => {
+    expect(parseDecimal("9".repeat(400))).toBeNull();
+    expect(parseDecimal(`${"9".repeat(400)},5`)).toBeNull();
+  });
 });
 
 describe("limits", () => {
